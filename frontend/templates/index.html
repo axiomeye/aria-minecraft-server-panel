@@ -238,7 +238,7 @@
 
     <div class="footer">
       <span>{{ user }}</span> &nbsp;·&nbsp;
-      <a href="/logout">log out</a>
+      <a href="/_gcp_iap/clear_login_cookie">log out</a>
     </div>
   </div>
 
@@ -309,7 +309,7 @@
       function poll() {
         fetch('/api/status', { credentials: 'same-origin' })
           .then(r => {
-            if (r.status === 401) { location.href = '/login'; return null; }
+            if (!r.ok) return null;
             return r.json();
           })
           .then(data => {

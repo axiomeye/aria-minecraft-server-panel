@@ -6,8 +6,7 @@ from functools import wraps
 
 import jwt
 import requests
-from authlib.integrations.flask_client import OAuth
-from flask import Flask, jsonify, redirect, render_template, session, url_for
+from flask import Flask, g, jsonify, redirect, render_template, request, url_for
 from werkzeug.middleware.proxy_fix import ProxyFix
 from google.cloud import compute_v1
 
@@ -20,7 +19,6 @@ PHRASES = [l.strip() for l in _phrases_file.read_text().splitlines() if l.strip(
 PROJECT = os.environ["GCP_PROJECT"]
 ZONE = os.environ["GCP_ZONE"]
 INSTANCE_NAME = os.environ["INSTANCE_NAME"]
-OAUTH_REDIRECT_URI = os.environ.get("OAUTH_REDIRECT_URI")
 REPO_OWNER = os.environ.get("GITHUB_REPO_OWNER", "axiomeye")
 REPO_NAME = os.environ.get("GITHUB_REPO_NAME", "aria-minecraft-server-iac")
 GH_APP_ID = os.environ["GH_APP_ID"]
@@ -30,25 +28,19 @@ ALLOWED = {e.strip() for e in os.environ["ALLOWED_EMAILS"].split(",")}
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
-app.secret_key = os.environ["FLASK_SECRET_KEY"]
-
-oauth = OAuth(app)
-oauth.register(
-    name="google",
-    client_id=os.environ["GOOGLE_CLIENT_ID"],
-    client_secret=os.environ["GOOGLE_CLIENT_SECRET"],
-    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-    client_kwargs={"scope": "openid email"},
-)
 
 
 def require_login(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        if "email" not in session:
-            return redirect(url_for("login"))
-        if session["email"] not in ALLOWED:
+        # IAP injects this header as "accounts.google.com:user@example.com"
+        header = request.headers.get("X-Goog-Authenticated-User-Email", "")
+        email = header.split(":")[-1].strip() if ":" in header else header.strip()
+        if not email:
+            return "Unauthorized", 401
+        if email not in ALLOWED:
             return "Access denied.", 403
+        g.email = email
         return f(*args, **kwargs)
     return wrapper
 
@@ -124,7 +116,7 @@ def get_workflow_status():
 def index():
     status, ip = server_status()
     workflow = get_workflow_status() if status != 'running' else None
-    return render_template("index.html", status=status, ip=ip, user=session["email"], phrase=random.choice(PHRASES), workflow=workflow)
+    return render_template("index.html", status=status, ip=ip, user=g.email, phrase=random.choice(PHRASES), workflow=workflow)
 
 
 @app.get("/api/status")
@@ -133,25 +125,6 @@ def api_status():
     status, ip = server_status()
     workflow = get_workflow_status() if status != 'running' else None
     return jsonify({"status": status, "ip": ip, "workflow": workflow})
-
-
-@app.get("/login")
-def login():
-    redirect_uri = OAUTH_REDIRECT_URI or url_for("callback", _external=True)
-    return oauth.google.authorize_redirect(redirect_uri)
-
-
-@app.get("/auth/callback")
-def callback():
-    token = oauth.google.authorize_access_token()
-    session["email"] = token["userinfo"]["email"]
-    return redirect(url_for("index"))
-
-
-@app.get("/logout")
-def logout():
-    session.clear()
-    return redirect(url_for("login"))
 
 
 @app.post("/action/<name>")

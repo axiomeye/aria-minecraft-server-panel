@@ -21,7 +21,7 @@ jobs:
   build:
     name: "Build & Push"
     runs-on: ubuntu-24.04
-    environment: aria-production
+    environment: dockerhub
 
     steps:
       - name: Checkout
