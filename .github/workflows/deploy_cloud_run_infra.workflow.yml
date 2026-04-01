@@ -1,0 +1,58 @@
+name: deploy cloud run infrastructure
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-cr-infra
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  terraform:
+    name: "Terraform Cloud Run"
+    runs-on: ubuntu-24.04
+    environment: aria-production
+
+    env:
+      # Terraform variables (from environment)
+      TF_VAR_region: ${{ vars.REGION }}
+      TF_VAR_project_id: reflected-gamma-341201
+      TF_VAR_zone: ${{ vars.ZONE }}
+      TF_VAR_instance_name: ${{ vars.INSTANCE_NAME }}
+      TF_VAR_flask_secret_key: ${{ secrets.FRONTEND_FLASK_SECRET }}
+      TF_VAR_google_client_id: ${{ secrets.FRONTEND_OAUTH_CLIENT_ID }}
+      TF_VAR_google_client_secret: ${{ secrets.FRONTEND_OAUTH_CLIENT_SECRET }}
+      TF_VAR_gh_app_id: ${{ secrets.GH_APP_ID }}
+      TF_VAR_gh_app_installation_id: ${{ secrets.GH_APP_INSTALLATION_ID }}
+      TF_VAR_gh_app_private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+      TF_VAR_allowed_emails: ${{ vars.FRONTEND_ALLOWED_EMAILS }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "latest"
+
+      - name: Terraform Init
+        working-directory: ./terraform/cloud-run
+        run: |
+          terraform init -upgrade \
+            -backend-config="bucket=${{ secrets.GCP_BUCKET }}" \
+            -backend-config="prefix=terraform-state-cr"
+
+      - name: Terraform Apply
+        working-directory: ./terraform/cloud-run
+        run: terraform apply -auto-approve

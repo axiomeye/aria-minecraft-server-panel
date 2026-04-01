@@ -1,0 +1,40 @@
+name: build frontend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+  workflow_dispatch:
+
+concurrency:
+  group: build-frontend
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: axiomeye/minecraft-frontend
+
+jobs:
+  build:
+    name: "Build & Push"
+    runs-on: ubuntu-24.04
+    environment: aria-production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push image
+        run: |
+          docker build -t "$IMAGE:${{ github.sha }}" -t "$IMAGE:latest" ./frontend
+          docker push "$IMAGE:${{ github.sha }}"
+          docker push "$IMAGE:latest"

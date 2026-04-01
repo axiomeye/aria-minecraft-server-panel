@@ -1,0 +1,43 @@
+name: update cloud run image
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Image tag to deploy (e.g. abc1234 or latest)"
+        required: true
+        default: "latest"
+
+concurrency:
+  group: update-cr-image
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  IMAGE: axiomeye/minecraft-frontend
+
+jobs:
+  deploy:
+    name: "Update Image"
+    runs-on: ubuntu-24.04
+    environment: aria-production
+
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run services update aria-mc-server \
+            --image="$IMAGE:${{ github.event.inputs.image_tag }}" \
+            --region="${{ vars.REGION }}" \
+            --quiet
