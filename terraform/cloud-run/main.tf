@@ -1,12 +1,3 @@
-resource "google_service_account" "frontend_sa" {
-  account_id   = "minecraft-frontend-sa"
-  display_name = "Cloud Run Frontend Service Account"
-
-  lifecycle {
-    ignore_changes = [display_name, description]
-  }
-}
-
 resource "google_cloud_run_v2_service" "frontend" {
   name        = "aria-mc-server"
   location    = var.region
@@ -15,7 +6,7 @@ resource "google_cloud_run_v2_service" "frontend" {
 
   template {
     execution_environment = "EXECUTION_ENVIRONMENT_GEN2"
-    service_account       = google_service_account.frontend_sa.email
+    service_account       = "minecraft-frontend-sa@${var.project_id}.iam.gserviceaccount.com"
 
     containers {
       image = "axiomeye/minecraft-frontend:latest"
