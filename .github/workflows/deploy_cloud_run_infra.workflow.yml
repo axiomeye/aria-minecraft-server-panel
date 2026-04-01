@@ -46,7 +46,7 @@ jobs:
       - name: Terraform Init
         working-directory: ./terraform/cloud-run
         run: |
-          terraform init -upgrade \
+          terraform init \
             -backend-config="bucket=${{ secrets.GCP_BUCKET }}" \
             -backend-config="prefix=terraform-states/cr"
 
