@@ -1,6 +1,10 @@
 resource "google_service_account" "frontend_sa" {
   account_id   = "minecraft-frontend-sa"
   display_name = "Cloud Run Frontend Service Account"
+
+  lifecycle {
+    ignore_changes = [display_name, description]
+  }
 }
 
 resource "google_cloud_run_v2_service" "frontend" {
