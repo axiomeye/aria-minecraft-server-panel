@@ -337,7 +337,7 @@
         <p>This will provision the infrastructure and start the boot sequence.<br><br><span style="color: #6b82aa; font-size: 0.75rem;">Note: The server will turn off automatically when no one is online.</span></p>
         <div style="display: flex; gap: 0.8rem; justify-content: center;">
           <button class="popup-btn" style="background: rgba(255,255,255,0.08); color: #94a3b8;" onclick="dismissConfirmPopup(event)">Cancel</button>
-          <form method="post" action="/action/start" style="margin: 0;">
+          <form id="start-form" style="margin: 0;">
             <button type="submit" class="popup-btn">Yes, start it!</button>
           </form>
         </div>
@@ -365,9 +365,7 @@
       <a href="/_gcp_iap/clear_login_cookie">log out</a>
     </div>
   </div>
-  {% if paypal_url %}
-  <p class="byline">by <a href="{{ paypal_url }}" target="_blank" rel="noopener">axiomeye</a></p>
-  {% endif %}
+  <p class="byline">by <a href="https://github.com/axiomeye" target="_blank" rel="noopener">axiomeye</a></p>
 
   <script>
     // ── Popups ──────────────────────────────────────────────────────────
@@ -514,6 +512,25 @@
       const initWfStatus = '{{ (workflow.status if workflow else '') }}';
       const initWorkflow = initWfStatus ? { status: initWfStatus } : null;
       if (needsPolling(initStatus, initIp, initWorkflow)) scheduleNext();
+
+      // Handle the pessimistic "Yes, start it!" submit optimistically
+      const startForm = document.getElementById('start-form');
+      if (startForm) {
+        startForm.onsubmit = function(e) {
+          e.preventDefault();
+          dismissConfirmPopup();
+
+          // Instantly show the user "Spinning Up" 
+          applyStatus('stopped', '', { status: 'queued' });
+          if (!timer) scheduleNext(); // start fast polling
+
+          // Make the background request
+          fetch('/action/start', { method: 'POST' })
+            .catch(() => {
+              // If it failed immediately, maybe start fast polling anyway
+            });
+        };
+      }
     })();
   </script>
 </body>
