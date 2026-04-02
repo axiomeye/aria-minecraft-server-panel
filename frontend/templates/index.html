@@ -310,18 +310,14 @@
       <div class="progress-bar"></div>
     </div>
     
-    <div id="workflow-status" class="workflow-status {% if workflow %}visible{% endif %}">
-      Infrastructure run: <a href="{{ workflow.html_url if workflow else '#' }}" target="_blank" id="workflow-link">
-        <span id="workflow-text">{{ workflow.conclusion if workflow and workflow.status == 'completed' else (workflow.status | replace('_', ' ') if workflow else '') }}</span>
-      </a>
-    </div>
 
-    <!-- Popup: server provisioned but still booting -->
+
+    <!-- Popup: server fully ready -->
     <div id="ready-backdrop" class="popup-backdrop">
       <div class="popup">
-        <div class="popup-icon">⛏️</div>
-        <h2>Server is Spinning Up!</h2>
-        <p>The infrastructure is ready, but the Minecraft server itself still needs <strong>4–5 minutes</strong> to fully start.<br><br>Grab a snack and try connecting in a bit.</p>
+        <div class="popup-icon">✅</div>
+        <h2>Server is Ready!</h2>
+        <p>The Minecraft server has fully finished booting and is ready for players!<br><br>Have fun playing!</p>
         <button class="popup-btn" onclick="dismissPopup()">Got it!</button>
         {% if paypal_url %}
         <p class="popup-donate">Enjoying the server? <a href="{{ paypal_url }}" target="_blank" rel="noopener">Buy me a coffee ☕</a></p>
@@ -398,17 +394,15 @@
       const pollTxt    = document.getElementById('poll-text');
       const progressEl = document.getElementById('progress-wrap');
       const startBtn   = document.getElementById('btn-start');
-      const wfStatus   = document.getElementById('workflow-status');
-      const wfLink     = document.getElementById('workflow-link');
-      const wfText     = document.getElementById('workflow-text');
 
       let timer = null;
       // Track previous workflow status to detect the transition to 'completed'
       let prevWfStatus = '{{ (workflow.status if workflow else '') }}';
       // If server was already running at page load, don't show the popup on first poll
-      let wasSpinningUp = {% if workflow and workflow.status in ('queued', 'in_progress') and status == 'stopped' %}true{% else %}false{% endif %};
+      let wasSpinningUp = {% if status == 'spinning_up' or (workflow and workflow.status in ('queued', 'in_progress') and status == 'stopped') %}true{% else %}false{% endif %};
 
       function isSpinningUp(status, workflow) {
+        if (status === 'spinning_up') return true;
         return status !== 'running'
           && !TRANSITIONAL.has(status)
           && workflow
@@ -452,27 +446,9 @@
           ipEl.classList.add('pending');
         }
 
-        // ── Workflow status label ──
-        if (workflow) {
-          wfStatus.classList.add('visible');
-          wfLink.href = workflow.html_url || '#';
-          let wfLabel = (workflow.status === 'completed' ? workflow.conclusion : workflow.status) || '';
-          wfText.textContent = wfLabel.replace(/_/g, ' ');
-        } else {
-          wfStatus.classList.remove('visible');
-        }
+        // Workflow status text removed from frontend UI
 
-        // ── Popup: show when workflow just finished (success) and server just came online ──
-        const wfJustCompleted = workflow
-          && workflow.status === 'completed'
-          && workflow.conclusion === 'success'
-          && prevWfStatus !== 'completed';
-
-        if (wasSpinningUp && wfJustCompleted) {
-          showPopup();
-          wasSpinningUp = false;
-        }
-        // Also trigger if we were spinning up and VM is now running
+        // ── Popup: show when server just came online ──
         if (wasSpinningUp && status === 'running') {
           showPopup();
           wasSpinningUp = false;

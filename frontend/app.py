@@ -5,6 +5,7 @@ import time
 
 import jwt
 import requests
+from mcstatus import JavaServer
 from flask import Flask, jsonify, redirect, render_template, request, url_for
 from werkzeug.middleware.proxy_fix import ProxyFix
 from google.cloud import compute_v1
@@ -33,6 +34,14 @@ def get_user():
     return header.split(":")[-1].strip() if ":" in header else header.strip()
 
 
+def check_minecraft_ready(ip):
+    try:
+        server = JavaServer.lookup(f"{ip}:25565", timeout=1.5)
+        server.status()
+        return True
+    except Exception:
+        return False
+
 def server_status():
     try:
         inst = compute_v1.InstancesClient().get(project=PROJECT, zone=ZONE, instance=INSTANCE_NAME)
@@ -40,7 +49,14 @@ def server_status():
             (ac.nat_i_p for ni in inst.network_interfaces for ac in ni.access_configs if ac.nat_i_p),
             None,
         )
-        return inst.status.lower(), ip
+        status = inst.status.lower()
+        
+        # Keep it in spinning_up state if VM is running but Java isn't responding yet
+        if status == 'running' and ip:
+            if not check_minecraft_ready(ip):
+                status = 'spinning_up'
+
+        return status, ip
     except Exception:
         return "stopped", None
 
