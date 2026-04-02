@@ -26,6 +26,7 @@ jobs:
       TF_VAR_gh_app_installation_id: ${{ secrets.GH_APP_INSTALLATION_ID }}
       TF_VAR_gh_app_private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
       TF_VAR_iap_group_email: ${{ vars.IAP_GROUP_EMAIL }}
+      TF_VAR_paypal_url: ${{ secrets.PAYPAL_URL }}
 
     steps:
       - name: Checkout

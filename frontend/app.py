@@ -22,6 +22,7 @@ REPO_NAME = os.environ.get("GITHUB_REPO_NAME", "aria-minecraft-server-iac")
 GH_APP_ID = os.environ["GH_APP_ID"]
 GH_APP_INSTALLATION_ID = os.environ["GH_APP_INSTALLATION_ID"]
 GH_APP_PRIVATE_KEY = os.environ["GH_APP_PRIVATE_KEY"]
+PAYPAL_URL = os.environ.get("PAYPAL_URL", "")
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
@@ -102,7 +103,7 @@ def get_workflow_status():
 def index():
     status, ip = server_status()
     workflow = get_workflow_status() if status != 'running' else None
-    return render_template("index.html", status=status, ip=ip, user=get_user(), phrase=random.choice(PHRASES), workflow=workflow)
+    return render_template("index.html", status=status, ip=ip, user=get_user(), phrase=random.choice(PHRASES), workflow=workflow, paypal_url=PAYPAL_URL)
 
 
 @app.get("/api/status")

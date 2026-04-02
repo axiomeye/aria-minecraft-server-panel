@@ -18,3 +18,7 @@ variable "gh_app_private_key" {
 variable "iap_group_email" {
   type = string
 }
+variable "paypal_url" {
+  type    = string
+  default = ""
+}

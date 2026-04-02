@@ -75,15 +75,18 @@
       border-radius: 50%;
       flex-shrink: 0;
     }
-    .badge.running  { background: rgba(34,197,94,0.12); color: #4ade80; }
+    .badge.running      { background: rgba(34,197,94,0.12);  color: #4ade80; }
     .badge.running .dot { background: #4ade80; box-shadow: 0 0 6px #4ade80; animation: pulse-green 1.8s ease-in-out infinite; }
-    .badge.stopped  { background: rgba(239,68,68,0.1);  color: #f87171; }
+    .badge.stopped      { background: rgba(239,68,68,0.1);   color: #f87171; }
     .badge.stopped .dot { background: #f87171; }
-    .badge.staging  { background: rgba(250,204,21,0.1); color: #fbbf24; }
+    .badge.staging      { background: rgba(250,204,21,0.1);  color: #fbbf24; }
     .badge.staging .dot { background: #fbbf24; animation: pulse-yellow 1.2s ease-in-out infinite; }
+    .badge.spinning-up      { background: rgba(251,146,60,0.13); color: #fb923c; }
+    .badge.spinning-up .dot { background: #fb923c; box-shadow: 0 0 8px rgba(251,146,60,0.6); animation: pulse-orange 1s ease-in-out infinite; }
 
     @keyframes pulse-green  { 0%,100%{opacity:1;transform:scale(1)}   50%{opacity:.5;transform:scale(1.3)} }
     @keyframes pulse-yellow { 0%,100%{opacity:1;transform:scale(1)}   50%{opacity:.4;transform:scale(1.4)} }
+    @keyframes pulse-orange { 0%,100%{opacity:1;transform:scale(1)}   50%{opacity:.35;transform:scale(1.5)} }
 
     /* ── IP section ── */
     .ip-block {
@@ -192,6 +195,89 @@
     .footer { font-size: 0.7rem; color: #2d3752; }
     .footer a { color: #3d507a; text-decoration: none; }
     .footer a:hover { color: #6b82aa; }
+
+    /* ── Ready Popup ── */
+    .popup-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .popup-backdrop.visible { opacity: 1; pointer-events: all; }
+    .popup {
+      background: rgba(15,23,42,0.98);
+      border: 1px solid rgba(251,146,60,0.25);
+      border-radius: 16px;
+      padding: 2rem 2.25rem;
+      width: 340px;
+      text-align: center;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.04), 0 32px 80px rgba(0,0,0,0.7);
+      transform: translateY(12px);
+      transition: transform 0.3s;
+    }
+    .popup-backdrop.visible .popup { transform: translateY(0); }
+    .popup-icon {
+      font-size: 2.4rem;
+      margin-bottom: 0.75rem;
+      line-height: 1;
+    }
+    .popup h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-bottom: 0.6rem;
+      letter-spacing: 0.02em;
+    }
+    .popup p {
+      font-size: 0.82rem;
+      color: #94a3b8;
+      line-height: 1.6;
+      margin-bottom: 1.4rem;
+    }
+    .popup p strong { color: #fb923c; }
+    .popup-btn {
+      background: linear-gradient(135deg, #ea6c1a, #fb923c);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.55rem 1.8rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .popup-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+    .popup-donate {
+      margin-top: 1rem;
+      font-size: 0.73rem;
+      color: #4a5680;
+    }
+    .popup-donate a {
+      color: #6b82aa;
+      text-decoration: none;
+      border-bottom: 1px dashed rgba(107,130,170,0.35);
+      transition: color 0.15s;
+    }
+    .popup-donate a:hover { color: #a5b8d8; }
+
+    /* ── By line ── */
+    .byline {
+      margin-top: 1.1rem;
+      font-size: 0.68rem;
+      color: #252e47;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+    .byline a {
+      color: #31405e;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .byline a:hover { color: #5b73a0; }
   </style>
 </head>
 <body>
@@ -199,11 +285,23 @@
     <h1>AriA</h1>
     <p class="phrase">{{ phrase }}</p>
 
-    {% set cls = 'running' if status == 'running' else ('staging' if status in ('staging', 'provisioning', 'repairing') else 'stopped') %}
+    {% if status == 'running' %}
+      {% set cls = 'running' %}
+      {% set label = 'RUNNING' %}
+    {% elif status in ('staging', 'provisioning', 'repairing') %}
+      {% set cls = 'staging' %}
+      {% set label = status | upper %}
+    {% elif workflow and workflow.status in ('queued', 'in_progress') and status == 'stopped' %}
+      {% set cls = 'spinning-up' %}
+      {% set label = 'SPINNING UP' %}
+    {% else %}
+      {% set cls = 'stopped' %}
+      {% set label = 'STOPPED' %}
+    {% endif %}
     <div class="badge-wrap">
       <span id="status-badge" class="badge {{ cls }}">
         <span class="dot"></span>
-        <span id="status-text">{{ status | upper if status else 'UNKNOWN' }}</span>
+        <span id="status-text">{{ label }}</span>
       </span>
     </div>
 
@@ -216,6 +314,19 @@
       Infrastructure run: <a href="{{ workflow.html_url if workflow else '#' }}" target="_blank" id="workflow-link">
         <span id="workflow-text">{{ workflow.conclusion if workflow and workflow.status == 'completed' else (workflow.status | replace('_', ' ') if workflow else '') }}</span>
       </a>
+    </div>
+
+    <!-- Popup: server provisioned but still booting -->
+    <div id="ready-backdrop" class="popup-backdrop">
+      <div class="popup">
+        <div class="popup-icon">⛏️</div>
+        <h2>Server is Spinning Up!</h2>
+        <p>The infrastructure is ready, but the Minecraft server itself still needs <strong>4–5 minutes</strong> to fully start.<br><br>Grab a snack and try connecting in a bit.</p>
+        <button class="popup-btn" onclick="dismissPopup()">Got it!</button>
+        {% if paypal_url %}
+        <p class="popup-donate">Enjoying the server? <a href="{{ paypal_url }}" target="_blank" rel="noopener">Buy me a coffee ☕</a></p>
+        {% endif %}
+      </div>
     </div>
 
     <div class="ip-block">
@@ -241,45 +352,84 @@
       <a href="/_gcp_iap/clear_login_cookie">log out</a>
     </div>
   </div>
+  {% if paypal_url %}
+  <p class="byline">by <a href="{{ paypal_url }}" target="_blank" rel="noopener">axiomeye</a></p>
+  {% endif %}
 
   <script>
+    // ── Popup ──────────────────────────────────────────────────────────
+    const backdrop = document.getElementById('ready-backdrop');
+    let popupShown = false;
+
+    function showPopup() {
+      if (popupShown) return;
+      popupShown = true;
+      backdrop.classList.add('visible');
+    }
+
+    function dismissPopup() {
+      backdrop.classList.remove('visible');
+    }
+
+    // ── Status polling ─────────────────────────────────────────────────
     (function () {
       const POLL_MS = 10_000;
       const TRANSITIONAL = new Set(['staging', 'provisioning', 'repairing', 'stopping']);
 
-      const badgeEl   = document.getElementById('status-badge');
-      const statusTxt = document.getElementById('status-text');
-      const ipEl      = document.getElementById('ip-display');
-      const pollEl    = document.getElementById('poll-status');
-      const pollTxt   = document.getElementById('poll-text');
+      const badgeEl    = document.getElementById('status-badge');
+      const statusTxt  = document.getElementById('status-text');
+      const ipEl       = document.getElementById('ip-display');
+      const pollEl     = document.getElementById('poll-status');
+      const pollTxt    = document.getElementById('poll-text');
       const progressEl = document.getElementById('progress-wrap');
-      const startBtn  = document.getElementById('btn-start');
-      const wfStatus  = document.getElementById('workflow-status');
-      const wfLink    = document.getElementById('workflow-link');
-      const wfText    = document.getElementById('workflow-text');
+      const startBtn   = document.getElementById('btn-start');
+      const wfStatus   = document.getElementById('workflow-status');
+      const wfLink     = document.getElementById('workflow-link');
+      const wfText     = document.getElementById('workflow-text');
 
       let timer = null;
+      // Track previous workflow status to detect the transition to 'completed'
+      let prevWfStatus = '{{ (workflow.status if workflow else '') }}';
+      // If server was already running at page load, don't show the popup on first poll
+      let wasSpinningUp = {% if workflow and workflow.status in ('queued', 'in_progress') and status == 'stopped' %}true{% else %}false{% endif %};
 
-      function needsPolling(status, ip) {
-        return !ip || status !== 'running';
+      function isSpinningUp(status, workflow) {
+        return status !== 'running'
+          && !TRANSITIONAL.has(status)
+          && workflow
+          && (workflow.status === 'in_progress' || workflow.status === 'queued');
+      }
+
+      function needsPolling(status, ip, workflow) {
+        return !ip || status !== 'running' || isSpinningUp(status, workflow);
       }
 
       function applyStatus(status, ip, workflow) {
-        // Badge class
-        const cls = status === 'running' ? 'running'
-                  : TRANSITIONAL.has(status) ? 'staging'
-                  : 'stopped';
-        badgeEl.className = `badge ${cls}`;
-        statusTxt.textContent = status.toUpperCase();
+        const transitioning = TRANSITIONAL.has(status);
+        const spinningUp    = isSpinningUp(status, workflow);
 
-        // Progress bar
-        progressEl.classList.toggle('visible', TRANSITIONAL.has(status));
+        // ── Badge ──
+        let cls, label;
+        if (status === 'running') {
+          cls = 'running';     label = 'RUNNING';
+        } else if (transitioning) {
+          cls = 'staging';     label = status.toUpperCase();
+        } else if (spinningUp) {
+          cls = 'spinning-up'; label = 'SPINNING UP';
+        } else {
+          cls = 'stopped';     label = 'STOPPED';
+        }
+        badgeEl.className  = `badge ${cls}`;
+        statusTxt.textContent = label;
 
-        // IP
+        // ── Progress bar ──
+        progressEl.classList.toggle('visible', transitioning || spinningUp);
+
+        // ── IP ──
         if (ip) {
           ipEl.textContent = ip + ':25565';
           ipEl.classList.remove('pending');
-        } else if (status === 'stopped') {
+        } else if (status === 'stopped' && !spinningUp) {
           ipEl.textContent = '—';
           ipEl.classList.remove('pending');
         } else {
@@ -287,54 +437,66 @@
           ipEl.classList.add('pending');
         }
 
-        // Workflow Status
+        // ── Workflow status label ──
         if (workflow) {
           wfStatus.classList.add('visible');
           wfLink.href = workflow.html_url || '#';
-          wfText.textContent = (workflow.status === 'completed' ? workflow.conclusion : workflow.status) || '';
-          wfText.textContent = wfText.textContent.replace(/_/g, ' ');
+          let wfLabel = (workflow.status === 'completed' ? workflow.conclusion : workflow.status) || '';
+          wfText.textContent = wfLabel.replace(/_/g, ' ');
         } else {
           wfStatus.classList.remove('visible');
         }
 
-        // Buttons
-        startBtn.disabled = (status === 'running');
+        // ── Popup: show when workflow just finished (success) and server just came online ──
+        const wfJustCompleted = workflow
+          && workflow.status === 'completed'
+          && workflow.conclusion === 'success'
+          && prevWfStatus !== 'completed';
 
-        // Poll indicator
-        const polling = needsPolling(status, ip);
+        if (wasSpinningUp && wfJustCompleted) {
+          showPopup();
+          wasSpinningUp = false;
+        }
+        // Also trigger if we were spinning up and VM is now running
+        if (wasSpinningUp && status === 'running') {
+          showPopup();
+          wasSpinningUp = false;
+        }
+
+        // Update prev tracking
+        prevWfStatus  = workflow ? workflow.status : '';
+        if (spinningUp) wasSpinningUp = true;
+
+        // ── Buttons ──
+        startBtn.disabled = (status === 'running' || spinningUp);
+
+        // ── Poll indicator ──
+        const polling = needsPolling(status, ip, workflow);
         pollEl.classList.toggle('active', polling);
         pollTxt.textContent = polling ? 'Checking status…' : '';
       }
 
       function poll() {
         fetch('/api/status', { credentials: 'same-origin' })
-          .then(r => {
-            if (!r.ok) return null;
-            return r.json();
-          })
+          .then(r => { if (!r.ok) return null; return r.json(); })
           .then(data => {
             if (!data) return;
             applyStatus(data.status, data.ip, data.workflow);
-            if (needsPolling(data.status, data.ip)) scheduleNext();
+            if (needsPolling(data.status, data.ip, data.workflow)) scheduleNext();
             else stopPolling();
           })
-          .catch(() => scheduleNext()); // keep trying on network error
+          .catch(() => scheduleNext());
       }
 
-      function scheduleNext() {
-        clearTimeout(timer);
-        timer = setTimeout(poll, POLL_MS);
-      }
+      function scheduleNext() { clearTimeout(timer); timer = setTimeout(poll, POLL_MS); }
+      function stopPolling()  { clearTimeout(timer); timer = null; }
 
-      function stopPolling() {
-        clearTimeout(timer);
-        timer = null;
-      }
-
-      // Kick off immediately if we need to poll
-      const initStatus = '{{ status }}';
-      const initIp     = '{{ ip or "" }}';
-      if (needsPolling(initStatus, initIp)) scheduleNext();
+      // Kick off polling if needed
+      const initStatus   = '{{ status }}';
+      const initIp       = '{{ ip or "" }}';
+      const initWfStatus = '{{ (workflow.status if workflow else '') }}';
+      const initWorkflow = initWfStatus ? { status: initWfStatus } : null;
+      if (needsPolling(initStatus, initIp, initWorkflow)) scheduleNext();
     })();
   </script>
 </body>

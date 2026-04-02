@@ -51,6 +51,10 @@ env {
         name  = "GH_APP_PRIVATE_KEY"
         value = var.gh_app_private_key
       }
+      env {
+        name  = "PAYPAL_URL"
+        value = var.paypal_url
+      }
     }
 
     scaling {
