@@ -195,6 +195,14 @@
     .footer { font-size: 0.7rem; color: #2d3752; }
     .footer a { color: #3d507a; text-decoration: none; }
     .footer a:hover { color: #6b82aa; }
+    .footer .gs-link {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      color: #4ade80; border: 1px solid rgba(74,222,128,0.25);
+      border-radius: 20px; padding: 0.15rem 0.6rem;
+      font-weight: 600; font-size: 0.68rem; letter-spacing: 0.03em;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+    }
+    .footer .gs-link:hover { color: #86efac; border-color: rgba(74,222,128,0.5); background: rgba(74,222,128,0.06); }
 
     /* ── Ready Popup ── */
     .popup-backdrop {
@@ -355,7 +363,7 @@
       {% set label = 'SPINNING UP' %}
     {% else %}
       {% set cls = 'stopped' %}
-      {% set label = 'STOPPED' %}
+      {% set label = 'OFFLINE' %}
     {% endif %}
     <div class="badge-wrap">
       <span id="status-badge" class="badge {{ cls }}">
@@ -454,13 +462,15 @@
     </div>
 
     <div class="buttons">
-      <button id="btn-start" class="btn-start" onclick="showConfirmPopup()" {% if status == 'running' %}disabled{% endif %}>Start</button>
+      <button id="btn-start" class="btn-start" onclick="showConfirmPopup()" {% if status == 'running' %}disabled{% endif %}>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;margin-right:5px;"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>Start
+      </button>
     </div>
 
     <div class="footer">
       <span>{{ user }}</span> &nbsp;·&nbsp;
       <a href="/_gcp_iap/clear_login_cookie">log out</a> &nbsp;·&nbsp;
-      <a href="#" onclick="showGsModal(event)">get started</a>
+      <a href="#" class="gs-link" onclick="showGsModal(event)">✦ get started</a>
     </div>
   </div>
   <p class="byline">by <a href="https://github.com/axiomeye" target="_blank" rel="noopener">axiomeye</a></p>
@@ -533,7 +543,7 @@
         } else if (spinningUp) {
           cls = 'spinning-up'; label = 'SPINNING UP';
         } else {
-          cls = 'stopped';     label = 'STOPPED';
+          cls = 'stopped';     label = 'OFFLINE';
         }
         badgeEl.className  = `badge ${cls}`;
         statusTxt.textContent = label;
