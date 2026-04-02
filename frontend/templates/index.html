@@ -403,13 +403,23 @@
       </div>
     </div>
 
-    <!-- Popup: server provisioned but still booting -->
+    <!-- Popup: shown immediately when Start is confirmed -->
     <div id="ready-backdrop" class="popup-backdrop">
       <div class="popup">
         <div class="popup-icon">⛏️</div>
         <h2>Server is Spinning Up!</h2>
         <p>The infrastructure is ready, but the Minecraft server itself still needs <strong>4–5 minutes</strong> to fully start.<br><br>Grab a snack and try connecting in a bit.</p>
         <button class="popup-btn" onclick="dismissPopup()">Got it!</button>
+      </div>
+    </div>
+
+    <!-- Popup: MC server is actually ready -->
+    <div id="mc-ready-backdrop" class="popup-backdrop">
+      <div class="popup">
+        <div class="popup-icon">✅</div>
+        <h2>Server is Ready!</h2>
+        <p>Connect now using:<br><strong id="ready-ip" style="font-family:'JetBrains Mono',monospace; color:#e2e8f0;"></strong></p>
+        <button class="popup-btn" onclick="dismissMcReadyPopup()">Let's go!</button>
         {% if paypal_url %}
         <p class="popup-donate">Enjoying the server? <a href="{{ paypal_url }}" target="_blank" rel="noopener">Buy me a coffee ☕</a></p>
         {% endif %}
@@ -464,17 +474,18 @@
 
     // ── Popups ──────────────────────────────────────────────────────────
     const backdrop = document.getElementById('ready-backdrop');
-    let popupShown = false;
+    function showPopup() { backdrop.classList.add('visible'); }
+    function dismissPopup() { backdrop.classList.remove('visible'); }
 
-    function showPopup() {
-      if (popupShown) return;
-      popupShown = true;
-      backdrop.classList.add('visible');
+    const mcReadyBackdrop = document.getElementById('mc-ready-backdrop');
+    let mcReadyShown = false;
+    function showMcReadyPopup(ip) {
+      if (mcReadyShown) return;
+      mcReadyShown = true;
+      document.getElementById('ready-ip').textContent = ip ? ip + ':25565' : '';
+      mcReadyBackdrop.classList.add('visible');
     }
-
-    function dismissPopup() {
-      backdrop.classList.remove('visible');
-    }
+    function dismissMcReadyPopup() { mcReadyBackdrop.classList.remove('visible'); }
 
     const confirmBackdrop = document.getElementById('confirm-backdrop');
     function showConfirmPopup() { confirmBackdrop.classList.add('visible'); }
@@ -494,10 +505,8 @@
       const startBtn   = document.getElementById('btn-start');
 
       let timer = null;
-      // Track previous workflow status to detect the transition to 'completed'
-      let prevWfStatus = '{{ (workflow.status if workflow else '') }}';
-      // If server was already running at page load, don't show the popup on first poll
-      let wasSpinningUp = {% if workflow and workflow.status in ('queued', 'in_progress') and status == 'stopped' %}true{% else %}false{% endif %};
+      // Track previous status to detect the transition to running
+      let prevStatus = '{{ status }}';
 
       function isSpinningUp(status, workflow) {
         if (status === 'spinning_up') return true;
@@ -544,27 +553,11 @@
           ipEl.classList.add('pending');
         }
 
-        // Workflow status text removed from frontend UI
-
-        // ── Popup: show when workflow just finished (infra ready, VM coming up) ──
-        const wfJustCompleted = workflow
-          && workflow.status === 'completed'
-          && workflow.conclusion === 'success'
-          && prevWfStatus !== 'completed';
-
-        if (wasSpinningUp && wfJustCompleted) {
-          showPopup();
-          wasSpinningUp = false;
+        // ── Popup: show when MC server just became ready ──
+        if (status === 'running' && prevStatus !== 'running') {
+          showMcReadyPopup(ip);
         }
-        // Fallback: also trigger if VM is now running directly
-        if (wasSpinningUp && status === 'running') {
-          showPopup();
-          wasSpinningUp = false;
-        }
-
-        // Update prev tracking
-        prevWfStatus  = workflow ? workflow.status : '';
-        if (spinningUp) wasSpinningUp = true;
+        prevStatus = status;
 
         // ── Buttons ──
         startBtn.disabled = (status === 'running' || spinningUp);
@@ -597,22 +590,18 @@
       const initWorkflow = initWfStatus ? { status: initWfStatus } : null;
       if (needsPolling(initStatus, initIp, initWorkflow)) scheduleNext();
 
-      // Handle the pessimistic "Yes, start it!" submit optimistically
+      // Handle "Yes, start it!" — show spinning-up popup immediately, then poll
       const startForm = document.getElementById('start-form');
       if (startForm) {
         startForm.onsubmit = function(e) {
           e.preventDefault();
           dismissConfirmPopup();
+          showPopup();
 
-          // Instantly show the user "Spinning Up" 
           applyStatus('stopped', '', { status: 'queued' });
-          if (!timer) scheduleNext(); // start fast polling
+          if (!timer) scheduleNext();
 
-          // Make the background request
-          fetch('/action/start', { method: 'POST' })
-            .catch(() => {
-              // If it failed immediately, maybe start fast polling anyway
-            });
+          fetch('/action/start', { method: 'POST' }).catch(() => {});
         };
       }
     })();
