@@ -329,6 +329,21 @@
       </div>
     </div>
 
+    <!-- Popup: Confirm Start -->
+    <div id="confirm-backdrop" class="popup-backdrop">
+      <div class="popup">
+        <div class="popup-icon">🤔</div>
+        <h2>Are you sure?</h2>
+        <p>This will provision the infrastructure and start the boot sequence.<br><br><span style="color: #6b82aa; font-size: 0.75rem;">Note: The server will turn off automatically when no one is online.</span></p>
+        <div style="display: flex; gap: 0.8rem; justify-content: center;">
+          <button class="popup-btn" style="background: rgba(255,255,255,0.08); color: #94a3b8;" onclick="dismissConfirmPopup(event)">Cancel</button>
+          <form method="post" action="/action/start" style="margin: 0;">
+            <button type="submit" class="popup-btn">Yes, start it!</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <div class="ip-block">
       <p class="ip-label">Server Address</p>
       <p id="ip-display" class="ip {% if not ip %}pending{% endif %}">
@@ -342,9 +357,7 @@
     </div>
 
     <div class="buttons">
-      <form method="post" action="/action/start">
-        <button id="btn-start" class="btn-start" {% if status == 'running' %}disabled{% endif %}>Start</button>
-      </form>
+      <button id="btn-start" class="btn-start" onclick="showConfirmPopup()" {% if status == 'running' %}disabled{% endif %}>Start</button>
     </div>
 
     <div class="footer">
@@ -357,7 +370,7 @@
   {% endif %}
 
   <script>
-    // ── Popup ──────────────────────────────────────────────────────────
+    // ── Popups ──────────────────────────────────────────────────────────
     const backdrop = document.getElementById('ready-backdrop');
     let popupShown = false;
 
@@ -370,6 +383,10 @@
     function dismissPopup() {
       backdrop.classList.remove('visible');
     }
+
+    const confirmBackdrop = document.getElementById('confirm-backdrop');
+    function showConfirmPopup() { confirmBackdrop.classList.add('visible'); }
+    function dismissConfirmPopup(e) { if(e) e.preventDefault(); confirmBackdrop.classList.remove('visible'); }
 
     // ── Status polling ─────────────────────────────────────────────────
     (function () {
