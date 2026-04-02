@@ -113,29 +113,6 @@
     }
     .ip.pending { color: #4a5680; font-size: 0.85rem; font-weight: 400; }
 
-    /* ── Poll indicator ── */
-    .poll-status {
-      font-size: 0.68rem;
-      color: #3a4460;
-      margin-bottom: 1.6rem;
-      min-height: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.4rem;
-      transition: opacity 0.3s;
-    }
-    .poll-status.active { color: #4a6199; }
-    .spinner {
-      width: 10px; height: 10px;
-      border: 2px solid rgba(100,140,220,0.25);
-      border-top-color: #5b8bd0;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      display: none;
-    }
-    .poll-status.active .spinner { display: block; }
-
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ── Progress bar (shows when staging) ── */
@@ -463,11 +440,6 @@
       </p>
     </div>
 
-    <div id="poll-status" class="poll-status {% if not ip or status != 'running' %}active{% endif %}">
-      <div class="spinner"></div>
-      <span id="poll-text">{% if not ip or status != 'running' %}Checking status…{% endif %}</span>
-    </div>
-
     <div class="buttons">
       <button id="btn-start" class="btn-start" onclick="showConfirmPopup()" {% if status == 'running' %}disabled{% endif %}>
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;margin-right:5px;"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>Start
@@ -518,8 +490,6 @@
       const badgeEl    = document.getElementById('status-badge');
       const statusTxt  = document.getElementById('status-text');
       const ipEl       = document.getElementById('ip-display');
-      const pollEl     = document.getElementById('poll-status');
-      const pollTxt    = document.getElementById('poll-text');
       const progressEl = document.getElementById('progress-wrap');
       const startBtn   = document.getElementById('btn-start');
 
@@ -581,10 +551,6 @@
         // ── Buttons ──
         startBtn.disabled = (status === 'running' || spinningUp);
 
-        // ── Poll indicator ──
-        const polling = needsPolling(status, ip, workflow);
-        pollEl.classList.toggle('active', polling);
-        pollTxt.textContent = polling ? 'Checking status…' : '';
       }
 
       function poll() {
