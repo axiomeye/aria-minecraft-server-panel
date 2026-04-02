@@ -278,6 +278,65 @@
       transition: color 0.15s;
     }
     .byline a:hover { color: #5b73a0; }
+
+    /* ── Get Started modal ── */
+    .gs-modal {
+      background: rgba(15,23,42,0.98);
+      border: 1px solid rgba(99,130,190,0.18);
+      border-radius: 16px;
+      padding: 2rem 2.25rem 1.75rem;
+      width: 340px;
+      text-align: left;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.04), 0 32px 80px rgba(0,0,0,0.7);
+      transform: translateY(12px);
+      transition: transform 0.3s;
+    }
+    .popup-backdrop.visible .gs-modal { transform: translateY(0); }
+    .gs-modal h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-bottom: 0.35rem;
+      text-align: center;
+    }
+    .gs-modal .gs-subtitle {
+      font-size: 0.75rem;
+      color: #5b73a0;
+      text-align: center;
+      margin-bottom: 1.4rem;
+    }
+    .gs-guides { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.4rem; }
+    .gs-guide-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.7rem 0.9rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px;
+      text-decoration: none;
+      color: #c8cfe0;
+      font-size: 0.84rem;
+      font-weight: 600;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .gs-guide-link:hover { background: rgba(255,255,255,0.07); border-color: rgba(99,130,190,0.3); color: #e2e8f0; }
+    .gs-guide-link .gs-flag { font-size: 1.3rem; line-height: 1; flex-shrink: 0; }
+    .gs-guide-link .gs-info { display: flex; flex-direction: column; gap: 0.1rem; }
+    .gs-guide-link .gs-os { font-size: 0.7rem; color: #4a6199; font-weight: 400; }
+    .gs-close-btn {
+      width: 100%;
+      padding: 0.5rem;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      color: #4a5680;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .gs-close-btn:hover { color: #94a3b8; border-color: rgba(255,255,255,0.15); }
   </style>
 </head>
 <body>
@@ -311,6 +370,38 @@
     </div>
     
 
+
+    <!-- Popup: Get Started -->
+    <div id="gs-backdrop" class="popup-backdrop">
+      <div class="gs-modal">
+        <h2>Get Started</h2>
+        <p class="gs-subtitle">Follow the guide for your platform to set up the game client.</p>
+        <div class="gs-guides">
+          <a class="gs-guide-link" href="https://github.com/axiomeye/aria-minecraft-server-iac/wiki/%F0%9F%87%AE%F0%9F%87%B9-Guida-Italiana-(Windows)" target="_blank" rel="noopener">
+            <span class="gs-flag">🇮🇹</span>
+            <span class="gs-info">
+              <span>Guida Italiana</span>
+              <span class="gs-os">Windows</span>
+            </span>
+          </a>
+          <a class="gs-guide-link" href="https://github.com/axiomeye/aria-minecraft-server-iac/wiki/%F0%9F%87%AC%F0%9F%87%A7-English-Guide-(Windows)" target="_blank" rel="noopener">
+            <span class="gs-flag">🇬🇧</span>
+            <span class="gs-info">
+              <span>English Guide</span>
+              <span class="gs-os">Windows</span>
+            </span>
+          </a>
+          <a class="gs-guide-link" href="https://github.com/axiomeye/aria-minecraft-server-iac/wiki/%F0%9F%87%AC%F0%9F%87%A7-English-Guide-(Mac)" target="_blank" rel="noopener">
+            <span class="gs-flag">🍎</span>
+            <span class="gs-info">
+              <span>English Guide</span>
+              <span class="gs-os">macOS</span>
+            </span>
+          </a>
+        </div>
+        <button class="gs-close-btn" onclick="hideGsModal()">Close</button>
+      </div>
+    </div>
 
     <!-- Popup: server fully ready -->
     <div id="ready-backdrop" class="popup-backdrop">
@@ -358,12 +449,19 @@
 
     <div class="footer">
       <span>{{ user }}</span> &nbsp;·&nbsp;
-      <a href="/_gcp_iap/clear_login_cookie">log out</a>
+      <a href="/_gcp_iap/clear_login_cookie">log out</a> &nbsp;·&nbsp;
+      <a href="#" onclick="showGsModal(event)">get started</a>
     </div>
   </div>
   <p class="byline">by <a href="https://github.com/axiomeye" target="_blank" rel="noopener">axiomeye</a></p>
 
   <script>
+    // ── Get Started modal ───────────────────────────────────────────────
+    const gsBackdrop = document.getElementById('gs-backdrop');
+    function showGsModal(e) { if (e) e.preventDefault(); gsBackdrop.classList.add('visible'); }
+    function hideGsModal() { gsBackdrop.classList.remove('visible'); }
+    gsBackdrop.addEventListener('click', function(e) { if (e.target === gsBackdrop) hideGsModal(); });
+
     // ── Popups ──────────────────────────────────────────────────────────
     const backdrop = document.getElementById('ready-backdrop');
     let popupShown = false;
