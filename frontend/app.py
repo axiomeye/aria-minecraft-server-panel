@@ -36,7 +36,7 @@ def get_user():
 
 def check_minecraft_ready(ip):
     try:
-        server = JavaServer.lookup(f"{ip}:25565", timeout=1.5)
+        server = JavaServer.lookup(f"{ip}:25565", timeout=5)
         server.status()
         return True
     except Exception:
