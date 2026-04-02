@@ -98,7 +98,7 @@ resource "google_iap_settings" "frontend" {
 
   application_settings {
     access_denied_page_settings {
-      access_denied_page_uri = "https://axiomeye.github.io/aria-minecraft-server-panel/"
+      access_denied_page_uri = "https://axiomeye.github.io/aria-panel-error/"
     }
   }
 }
