@@ -15,10 +15,6 @@ variable "gh_app_private_key" {
   type    = string
   default = ""
 }
-variable "allowed_emails" {
-  type    = string
-  default = ""
-}
 variable "iap_group_email" {
   type = string
 }

@@ -2,11 +2,10 @@ import logging
 import os
 import random
 import time
-from functools import wraps
 
 import jwt
 import requests
-from flask import Flask, g, jsonify, redirect, render_template, request, url_for
+from flask import Flask, jsonify, redirect, render_template, request, url_for
 from werkzeug.middleware.proxy_fix import ProxyFix
 from google.cloud import compute_v1
 
@@ -14,7 +13,6 @@ from pathlib import Path
 
 _phrases_file = Path(__file__).parent / "phrases.txt"
 PHRASES = [l.strip() for l in _phrases_file.read_text().splitlines() if l.strip()]
-
 
 PROJECT = os.environ["GCP_PROJECT"]
 ZONE = os.environ["GCP_ZONE"]
@@ -24,25 +22,14 @@ REPO_NAME = os.environ.get("GITHUB_REPO_NAME", "aria-minecraft-server-iac")
 GH_APP_ID = os.environ["GH_APP_ID"]
 GH_APP_INSTALLATION_ID = os.environ["GH_APP_INSTALLATION_ID"]
 GH_APP_PRIVATE_KEY = os.environ["GH_APP_PRIVATE_KEY"]
-ALLOWED = {e.strip() for e in os.environ["ALLOWED_EMAILS"].split(",")}
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 
-def require_login(f):
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        # IAP injects this header as "accounts.google.com:user@example.com"
-        header = request.headers.get("X-Goog-Authenticated-User-Email", "")
-        email = header.split(":")[-1].strip() if ":" in header else header.strip()
-        if not email:
-            return "Unauthorized", 401
-        if email not in ALLOWED:
-            return "Access denied.", 403
-        g.email = email
-        return f(*args, **kwargs)
-    return wrapper
+def get_user():
+    header = request.headers.get("X-Goog-Authenticated-User-Email", "")
+    return header.split(":")[-1].strip() if ":" in header else header.strip()
 
 
 def server_status():
@@ -112,15 +99,13 @@ def get_workflow_status():
 
 
 @app.get("/")
-@require_login
 def index():
     status, ip = server_status()
     workflow = get_workflow_status() if status != 'running' else None
-    return render_template("index.html", status=status, ip=ip, user=g.email, phrase=random.choice(PHRASES), workflow=workflow)
+    return render_template("index.html", status=status, ip=ip, user=get_user(), phrase=random.choice(PHRASES), workflow=workflow)
 
 
 @app.get("/api/status")
-@require_login
 def api_status():
     status, ip = server_status()
     workflow = get_workflow_status() if status != 'running' else None
@@ -128,7 +113,6 @@ def api_status():
 
 
 @app.post("/action/<name>")
-@require_login
 def action(name):
     events = {"start": "create-infr", "stop": "destroy-infr"}
     if name in events:

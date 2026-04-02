@@ -39,11 +39,7 @@ resource "google_cloud_run_v2_service" "frontend" {
         name  = "GITHUB_REPO_NAME"
         value = "aria-minecraft-server-iac"
       }
-      env {
-        name  = "ALLOWED_EMAILS"
-        value = var.allowed_emails
-      }
-      env {
+env {
         name  = "GH_APP_ID"
         value = var.gh_app_id
       }

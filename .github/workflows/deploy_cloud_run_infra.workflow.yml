@@ -25,7 +25,6 @@ jobs:
       TF_VAR_gh_app_id: ${{ secrets.GH_APP_ID }}
       TF_VAR_gh_app_installation_id: ${{ secrets.GH_APP_INSTALLATION_ID }}
       TF_VAR_gh_app_private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
-      TF_VAR_allowed_emails: ${{ vars.FRONTEND_ALLOWED_EMAILS }}
       TF_VAR_iap_group_email: ${{ vars.IAP_GROUP_EMAIL }}
 
     steps:
@@ -46,7 +45,7 @@ jobs:
       - name: Terraform Init
         working-directory: ./terraform/cloud-run
         run: |
-          terraform init \
+          terraform init -upgrade \
             -backend-config="bucket=${{ secrets.GCP_BUCKET }}" \
             -backend-config="prefix=terraform-states/cr"
 
