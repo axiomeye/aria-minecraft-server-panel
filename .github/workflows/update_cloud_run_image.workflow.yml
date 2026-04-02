@@ -3,10 +3,18 @@ name: update cloud run image
 on:
   workflow_dispatch:
     inputs:
-      image_tag:
-        description: "Image tag to deploy (e.g. abc1234 or latest)"
+      image_tag_type:
+        description: "Which image to deploy"
         required: true
+        type: choice
         default: "latest"
+        options:
+          - latest
+          - specific
+      image_tag:
+        description: "Specific tag (only used when 'specific' is selected above)"
+        required: false
+        default: ""
 
 concurrency:
   group: update-cr-image
@@ -37,8 +45,13 @@ jobs:
 
       - name: Resolve image digest
         run: |
-          docker pull "$IMAGE:${{ github.event.inputs.image_tag }}"
-          echo "RESOLVED=$(docker inspect --format='{{index .RepoDigests 0}}' $IMAGE:${{ github.event.inputs.image_tag }})" >> $GITHUB_ENV
+          if [ "${{ github.event.inputs.image_tag_type }}" = "specific" ]; then
+            TAG="${{ github.event.inputs.image_tag }}"
+          else
+            TAG="latest"
+          fi
+          docker pull "$IMAGE:$TAG"
+          echo "RESOLVED=$(docker inspect --format='{{index .RepoDigests 0}}' $IMAGE:$TAG)" >> $GITHUB_ENV
 
       - name: Deploy to Cloud Run
         run: |
