@@ -403,12 +403,12 @@
       </div>
     </div>
 
-    <!-- Popup: server fully ready -->
+    <!-- Popup: server provisioned but still booting -->
     <div id="ready-backdrop" class="popup-backdrop">
       <div class="popup">
-        <div class="popup-icon">✅</div>
-        <h2>Server is Ready!</h2>
-        <p>The Minecraft server has fully finished booting and is ready for players!<br><br>Have fun playing!</p>
+        <div class="popup-icon">⛏️</div>
+        <h2>Server is Spinning Up!</h2>
+        <p>The infrastructure is ready, but the Minecraft server itself still needs <strong>4–5 minutes</strong> to fully start.<br><br>Grab a snack and try connecting in a bit.</p>
         <button class="popup-btn" onclick="dismissPopup()">Got it!</button>
         {% if paypal_url %}
         <p class="popup-donate">Enjoying the server? <a href="{{ paypal_url }}" target="_blank" rel="noopener">Buy me a coffee ☕</a></p>
@@ -497,7 +497,7 @@
       // Track previous workflow status to detect the transition to 'completed'
       let prevWfStatus = '{{ (workflow.status if workflow else '') }}';
       // If server was already running at page load, don't show the popup on first poll
-      let wasSpinningUp = {% if status == 'spinning_up' or (workflow and workflow.status in ('queued', 'in_progress') and status == 'stopped') %}true{% else %}false{% endif %};
+      let wasSpinningUp = {% if workflow and workflow.status in ('queued', 'in_progress') and status == 'stopped' %}true{% else %}false{% endif %};
 
       function isSpinningUp(status, workflow) {
         if (status === 'spinning_up') return true;
@@ -546,7 +546,17 @@
 
         // Workflow status text removed from frontend UI
 
-        // ── Popup: show when server just came online ──
+        // ── Popup: show when workflow just finished (infra ready, VM coming up) ──
+        const wfJustCompleted = workflow
+          && workflow.status === 'completed'
+          && workflow.conclusion === 'success'
+          && prevWfStatus !== 'completed';
+
+        if (wasSpinningUp && wfJustCompleted) {
+          showPopup();
+          wasSpinningUp = false;
+        }
+        // Fallback: also trigger if VM is now running directly
         if (wasSpinningUp && status === 'running') {
           showPopup();
           wasSpinningUp = false;
