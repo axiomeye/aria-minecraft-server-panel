@@ -35,9 +35,14 @@ jobs:
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@e427ad8a34f8676edf47cf7d7925499adf3eb74f # v2
 
+      - name: Resolve image digest
+        run: |
+          docker pull "$IMAGE:${{ github.event.inputs.image_tag }}"
+          echo "RESOLVED=$(docker inspect --format='{{index .RepoDigests 0}}' $IMAGE:${{ github.event.inputs.image_tag }})" >> $GITHUB_ENV
+
       - name: Deploy to Cloud Run
         run: |
           gcloud run services update aria-mc-server \
-            --image="$IMAGE:${{ github.event.inputs.image_tag }}" \
+            --image="$RESOLVED" \
             --region="${{ vars.REGION }}" \
             --quiet
