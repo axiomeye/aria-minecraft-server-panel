@@ -91,3 +91,14 @@ resource "google_iap_web_cloud_run_service_iam_member" "allowed_group" {
 data "google_project" "project" {
   project_id = var.project_id
 }
+
+# Custom access-denied page for IAP
+resource "google_iap_settings" "frontend" {
+  name = "projects/${data.google_project.project.number}/iap_web/cloud_run_${var.region}/services/${google_cloud_run_v2_service.frontend.name}"
+
+  application_settings {
+    access_denied_page_settings {
+      access_denied_page_uri = "https://axiomeye.github.io/aria-minecraft-server-panel/"
+    }
+  }
+}
