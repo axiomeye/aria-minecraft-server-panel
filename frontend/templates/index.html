@@ -499,7 +499,10 @@
           applyStatus('stopped', '', { status: 'queued' });
           if (!timer) scheduleNext();
 
-          fetch('/action/start', { method: 'POST' }).catch(() => {});
+          fetch('/action/start', { method: 'POST', credentials: 'same-origin' })
+            .catch(err => {
+              console.error('Error triggering start action:', err);
+            });
         };
       }
     })();
