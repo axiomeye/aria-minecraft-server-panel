@@ -9,7 +9,7 @@ resource "google_cloud_run_v2_service" "frontend" {
     service_account       = "minecraft-frontend-sa@${var.project_id}.iam.gserviceaccount.com"
 
     containers {
-      image = "axiomeye/minecraft-frontend:latest"
+      image = "axiomeye/my-private-images:minecraft-frontend-latest"
 
       resources {
         limits = {

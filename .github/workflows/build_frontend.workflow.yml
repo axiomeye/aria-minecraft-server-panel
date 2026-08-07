@@ -15,7 +15,7 @@ permissions:
   contents: read
 
 env:
-  IMAGE: axiomeye/minecraft-frontend
+  IMAGE: axiomeye/my-private-images
 
 jobs:
   build:
@@ -35,6 +35,6 @@ jobs:
 
       - name: Build and push image
         run: |
-          docker build -t "$IMAGE:${{ github.sha }}" -t "$IMAGE:latest" ./frontend
-          docker push "$IMAGE:${{ github.sha }}"
-          docker push "$IMAGE:latest"
+          docker build -t "$IMAGE:minecraft-frontend-${{ github.sha }}" -t "$IMAGE:minecraft-frontend-latest" ./frontend
+          docker push "$IMAGE:minecraft-frontend-${{ github.sha }}"
+          docker push "$IMAGE:minecraft-frontend-latest"

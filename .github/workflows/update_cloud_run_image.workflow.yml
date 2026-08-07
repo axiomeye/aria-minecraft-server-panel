@@ -25,7 +25,7 @@ permissions:
   id-token: write
 
 env:
-  IMAGE: axiomeye/minecraft-frontend
+  IMAGE: axiomeye/my-private-images
 
 jobs:
   deploy:
@@ -48,7 +48,7 @@ jobs:
           if [ "${{ github.event.inputs.image_tag_type }}" = "specific" ]; then
             TAG="${{ github.event.inputs.image_tag }}"
           else
-            TAG="latest"
+            TAG="minecraft-frontend-latest"
           fi
           docker pull "$IMAGE:$TAG"
           echo "RESOLVED=$(docker inspect --format='{{index .RepoDigests 0}}' $IMAGE:$TAG)" >> $GITHUB_ENV
