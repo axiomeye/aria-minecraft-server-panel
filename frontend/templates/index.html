@@ -15,11 +15,175 @@
       color: #c8cfe0;
       min-height: 100vh;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      padding: 2rem 1rem;
       background-image: radial-gradient(ellipse at 50% 0%, rgba(80, 160, 255, 0.18) 0%, rgba(30, 90, 180, 0.07) 50%, transparent 75%);
     }
 
+    /* ── Views ── */
+    .view {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      animation: view-in 0.45s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+    }
+    .view.hidden { display: none; }
+    @keyframes view-in {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ══════════════════════════════════════════════
+       LANDING
+       ══════════════════════════════════════════════ */
+    .landing { text-align: center; max-width: 640px; }
+
+    .landing-title {
+      font-size: 4.6rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      background: linear-gradient(135deg, #7eb3ff 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.05;
+      margin-right: -0.2em; /* offset the trailing letter-spacing */
+    }
+
+    .landing-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.34em;
+      color: #45557a;
+      text-transform: uppercase;
+      margin-top: 0.35rem;
+      margin-right: -0.34em;
+    }
+
+    .landing-desc {
+      font-size: 0.95rem;
+      line-height: 1.85;
+      color: #8fa3c4;
+      margin: 2rem auto 3rem;
+      max-width: 560px;
+    }
+    .landing-desc strong { color: #cbd8ee; font-weight: 600; }
+    .landing-desc .accent { color: #a78bfa; font-weight: 600; }
+
+    /* ── Hex buttons ── */
+    .hex-row {
+      display: flex;
+      gap: 2.4rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .hex-btn {
+      --hex: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+      position: relative;
+      display: block;
+      width: 256px;
+      height: 232px;
+      padding: 2px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      clip-path: var(--hex);
+      background: linear-gradient(120deg, #2563eb, #a78bfa, #7eb3ff, #2563eb);
+      background-size: 300% 300%;
+      animation: border-flow 7s linear infinite;
+      filter: drop-shadow(0 14px 34px rgba(0, 0, 0, 0.55));
+      transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.3, 1), filter 0.22s;
+    }
+    .hex-btn.alt {
+      background: linear-gradient(120deg, #16a34a, #4ade80, #86efac, #16a34a);
+      background-size: 300% 300%;
+    }
+    @keyframes border-flow {
+      0%   { background-position:   0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position:   0% 50%; }
+    }
+
+    .hex-inner {
+      width: 100%;
+      height: 100%;
+      clip-path: var(--hex);
+      background:
+        radial-gradient(ellipse at 50% 118%, rgba(59, 130, 246, 0.22) 0%, transparent 62%),
+        #0b1424;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.55rem;
+      padding: 0 2.5rem;
+      text-align: center;
+      transition: background 0.25s;
+    }
+    .hex-btn.alt .hex-inner {
+      background:
+        radial-gradient(ellipse at 50% 118%, rgba(74, 222, 128, 0.18) 0%, transparent 62%),
+        #0b1424;
+    }
+
+    .hex-btn:hover, .hex-btn:focus-visible {
+      transform: translateY(-7px) scale(1.025);
+      outline: none;
+      filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 16px rgba(126, 179, 255, 0.35));
+    }
+    .hex-btn.alt:hover, .hex-btn.alt:focus-visible {
+      filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 16px rgba(74, 222, 128, 0.32));
+    }
+    .hex-btn:hover .hex-inner, .hex-btn:focus-visible .hex-inner {
+      background:
+        radial-gradient(ellipse at 50% 112%, rgba(59, 130, 246, 0.42) 0%, transparent 68%),
+        #0d1a30;
+    }
+    .hex-btn.alt:hover .hex-inner, .hex-btn.alt:focus-visible .hex-inner {
+      background:
+        radial-gradient(ellipse at 50% 112%, rgba(74, 222, 128, 0.32) 0%, transparent 68%),
+        #0d1a30;
+    }
+    .hex-btn:active { transform: translateY(-2px) scale(1); }
+
+    .hex-icon { color: #7eb3ff; line-height: 0; }
+    .hex-btn.alt .hex-icon { color: #4ade80; }
+    .hex-label {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #e8eefc;
+      letter-spacing: 0.05em;
+      font-family: 'Inter', sans-serif;
+    }
+    .hex-sub {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #5c729a;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 620px) {
+      .landing-title { font-size: 3.2rem; }
+      .landing-desc { font-size: 0.88rem; margin: 1.5rem auto 2.25rem; }
+      .hex-row { gap: 1.6rem; }
+      .hex-btn { width: 216px; height: 196px; }
+      .hex-inner { padding: 0 2rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hex-btn { animation: none; }
+      .view { animation: none; }
+    }
+
+    /* ══════════════════════════════════════════════
+       PANEL
+       ══════════════════════════════════════════════ */
     .card {
       background: rgba(15, 23, 42, 0.95);
       border: 1px solid rgba(99, 130, 190, 0.13);
@@ -168,6 +332,14 @@
     button:disabled { opacity: 0.28; cursor: default; }
     .btn-start { background: linear-gradient(135deg, #2563eb, #3b82f6); color: #fff; }
 
+    /* The generic `button` rules above outrank the .hex-btn ones on
+       :hover/:active, so re-assert the hex styling at equal specificity. */
+    .hex-btn, .hex-btn:hover:not(:disabled), .hex-btn:active:not(:disabled) {
+      padding: 2px; border-radius: 0; opacity: 1;
+    }
+    .hex-btn:hover:not(:disabled) { transform: translateY(-7px) scale(1.025); }
+    .hex-btn:active:not(:disabled) { transform: translateY(-2px) scale(1); }
+
     /* ── Footer ── */
     .footer { font-size: 0.7rem; color: #7a8fac; }
     .footer a { color: #7a8fac; text-decoration: none; }
@@ -180,6 +352,15 @@
       transition: color 0.15s, border-color 0.15s, background 0.15s;
     }
     .footer .gs-link:hover { color: #86efac; border-color: rgba(74,222,128,0.5); background: rgba(74,222,128,0.06); }
+
+    /* ── Back link ── */
+    .back-link {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      font-size: 0.7rem; color: #55688c; text-decoration: none;
+      margin-bottom: 1rem; letter-spacing: 0.06em;
+      transition: color 0.15s;
+    }
+    .back-link:hover { color: #8fa8cc; }
 
     /* ── Ready Popup ── */
     .popup-backdrop {
@@ -224,6 +405,7 @@
     }
     .popup p strong { color: #fb923c; }
     .popup-btn {
+      display: inline-block;
       background: linear-gradient(135deg, #ea6c1a, #fb923c);
       color: #fff;
       border: none;
@@ -232,6 +414,7 @@
       font-family: 'Inter', sans-serif;
       font-size: 0.88rem;
       font-weight: 600;
+      text-decoration: none;
       cursor: pointer;
       transition: opacity 0.15s, transform 0.1s;
     }
@@ -267,109 +450,173 @@
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>AriA</h1>
-    <p class="phrase">{{ phrase }}</p>
 
-    {% if status == 'running' %}
-      {% set cls = 'running' %}
-      {% set label = 'RUNNING' %}
-    {% elif status in ('staging', 'provisioning', 'repairing') %}
-      {% set cls = 'staging' %}
-      {% set label = status | upper %}
-    {% elif workflow and workflow.status in ('queued', 'in_progress') and status == 'stopped' %}
-      {% set cls = 'spinning-up' %}
-      {% set label = 'SPINNING UP' %}
-    {% else %}
-      {% set cls = 'stopped' %}
-      {% set label = 'OFFLINE' %}
-    {% endif %}
-    <div class="badge-wrap">
-      <span id="status-badge" class="badge {{ cls }}">
-        <span class="dot"></span>
-        <span id="status-text">{{ label }}</span>
-      </span>
-    </div>
+  <!-- ══════════════ LANDING VIEW ══════════════ -->
+  <div id="view-landing" class="view">
+    <div class="landing">
+      <h1 class="landing-title">AriA</h1>
+      <p class="landing-tag">Survival · since 2021</p>
 
-    <!-- indeterminate bar while server is spinning up -->
-    <div id="progress-wrap" class="progress-wrap {% if status in ('staging', 'provisioning', 'repairing') %}visible{% endif %}">
-      <div class="progress-bar"></div>
-    </div>
-    
-
-
-    <!-- Popup: Get Started -->
-    <div id="gs-backdrop" class="popup-backdrop">
-      <div class="popup">
-        <div class="popup-icon">📖</div>
-        <h2>Setup Guide</h2>
-        <p>You are about to be redirected to the setup guide.</p>
-        <a class="popup-btn" href="https://axiomeye.github.io/aria-mc-server-guide/" target="_blank" rel="noopener" onclick="hideGsModal()">Open Guide</a>
-      </div>
-    </div>
-
-    <!-- Popup: shown immediately when Start is confirmed -->
-    <div id="ready-backdrop" class="popup-backdrop">
-      <div class="popup">
-        <div class="popup-icon">⛏️</div>
-        <h2>Server is Spinning Up!</h2>
-        <p>The infrastructure is ready, but the Minecraft server itself still needs <strong>4–5 minutes</strong> to fully start.<br><br>Grab a snack and try connecting in a bit.</p>
-        <button class="popup-btn" onclick="dismissPopup()">Got it!</button>
-      </div>
-    </div>
-
-    <!-- Popup: MC server is actually ready -->
-    <div id="mc-ready-backdrop" class="popup-backdrop">
-      <div class="popup">
-        <div class="popup-icon">✅</div>
-        <h2>Server is Ready!</h2>
-        <p>Connect now using:<br><strong id="ready-ip" style="font-family:'JetBrains Mono',monospace; color:#e2e8f0;"></strong></p>
-        <button class="popup-btn" onclick="dismissMcReadyPopup()">Let's go!</button>
-        {% if paypal_url %}
-        <p class="popup-donate">Enjoying the server? <a href="{{ paypal_url }}" target="_blank" rel="noopener">Buy me a coffee ☕</a></p>
-        {% endif %}
-      </div>
-    </div>
-
-    <!-- Popup: Confirm Start -->
-    <div id="confirm-backdrop" class="popup-backdrop">
-      <div class="popup">
-        <div class="popup-icon">🤔</div>
-        <h2>Are you sure?</h2>
-        <p>This will provision the infrastructure and start the boot sequence.<br><br><span style="color: #6b82aa; font-size: 0.75rem;">Note: The server will turn off automatically when no one is online.</span></p>
-        <div style="display: flex; gap: 0.8rem; justify-content: center;">
-          <button class="popup-btn" style="background: rgba(255,255,255,0.08); color: #94a3b8;" onclick="dismissConfirmPopup(event)">Cancel</button>
-          <form id="start-form" style="margin: 0;">
-            <button type="submit" class="popup-btn">Yes, start it!</button>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <div class="ip-block">
-      <p class="ip-label">Server Address</p>
-      <p id="ip-display" class="ip {% if not ip %}pending{% endif %}">
-        {% if ip %}{{ ip }}:25565{% elif status == 'stopped' %}—{% else %}Waiting for IP…{% endif %}
+      <p class="landing-desc">
+        <strong>AriA</strong> was born in 2021 during the pandemic, to breathe fresh air once again
+        hence the name. Since then we have built, had fun, survived together and raped the
+        Ender Dragon multiple times with explosive arrows. Come and join the fun!
+        <br><span class="accent">Also, we have dragons.</span>
       </p>
-    </div>
 
-    <div class="buttons">
-      <button id="btn-start" class="btn-start" onclick="showConfirmPopup()" {% if status == 'running' %}disabled{% endif %}>
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;margin-right:5px;"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>Start
-      </button>
-    </div>
+      <div class="hex-row">
+        <button class="hex-btn" onclick="enterPanel()">
+          <span class="hex-inner">
+            <span class="hex-icon">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+            </span>
+            <span class="hex-label">Start the Server</span>
+            <span class="hex-sub">Power it up &amp; grab the IP</span>
+          </span>
+        </button>
 
-    <div class="footer">
-      <span>{{ user }}</span> &nbsp;·&nbsp;
-      <a href="/_gcp_iap/clear_login_cookie">log out</a>
+        <a class="hex-btn alt" href="https://axiomeye.github.io/aria-mc-server-guide/" target="_blank" rel="noopener">
+          <span class="hex-inner">
+            <span class="hex-icon">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            </span>
+            <span class="hex-label">How to Join</span>
+            <span class="hex-sub">First time here? Start here</span>
+          </span>
+        </a>
+      </div>
     </div>
-    <div class="footer" style="margin-top:0.6rem;">
-      New to AriA? <a href="#" class="gs-link" onclick="showGsModal(event)">✦ get started</a>
+    <p class="byline">by <a href="https://github.com/axiomeye" target="_blank" rel="noopener">axiomeye</a></p>
+  </div>
+
+  <!-- ══════════════ PANEL VIEW ══════════════ -->
+  <div id="view-panel" class="view hidden">
+    <a href="#" class="back-link" onclick="exitPanel(event)">← back</a>
+    <div class="card">
+      <h1>AriA</h1>
+      <p class="phrase">{{ phrase }}</p>
+
+      {% if status == 'running' %}
+        {% set cls = 'running' %}
+        {% set label = 'RUNNING' %}
+      {% elif status in ('staging', 'provisioning', 'repairing') %}
+        {% set cls = 'staging' %}
+        {% set label = status | upper %}
+      {% elif workflow and workflow.status in ('queued', 'in_progress') and status == 'stopped' %}
+        {% set cls = 'spinning-up' %}
+        {% set label = 'SPINNING UP' %}
+      {% else %}
+        {% set cls = 'stopped' %}
+        {% set label = 'OFFLINE' %}
+      {% endif %}
+      <div class="badge-wrap">
+        <span id="status-badge" class="badge {{ cls }}">
+          <span class="dot"></span>
+          <span id="status-text">{{ label }}</span>
+        </span>
+      </div>
+
+      <!-- indeterminate bar while server is spinning up -->
+      <div id="progress-wrap" class="progress-wrap {% if status in ('staging', 'provisioning', 'repairing') %}visible{% endif %}">
+        <div class="progress-bar"></div>
+      </div>
+
+      <div class="ip-block">
+        <p class="ip-label">Server Address</p>
+        <p id="ip-display" class="ip {% if not ip %}pending{% endif %}">
+          {% if ip %}{{ ip }}:25565{% elif status == 'stopped' %}—{% else %}Waiting for IP…{% endif %}
+        </p>
+      </div>
+
+      <div class="buttons">
+        <button id="btn-start" class="btn-start" onclick="showConfirmPopup()" {% if status == 'running' %}disabled{% endif %}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;margin-right:5px;"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>Start
+        </button>
+      </div>
+
+      <div class="footer">
+        <span>{{ user }}</span> &nbsp;·&nbsp;
+        <a href="/_gcp_iap/clear_login_cookie">log out</a>
+      </div>
+      <div class="footer" style="margin-top:0.6rem;">
+        New to AriA? <a href="#" class="gs-link" onclick="showGsModal(event)">✦ get started</a>
+      </div>
+    </div>
+    <p class="byline">by <a href="https://github.com/axiomeye" target="_blank" rel="noopener">axiomeye</a></p>
+  </div>
+
+  <!-- ══════════════ POPUPS ══════════════ -->
+
+  <!-- Popup: Get Started -->
+  <div id="gs-backdrop" class="popup-backdrop">
+    <div class="popup">
+      <div class="popup-icon">📖</div>
+      <h2>Setup Guide</h2>
+      <p>You are about to be redirected to the setup guide.</p>
+      <a class="popup-btn" href="https://axiomeye.github.io/aria-mc-server-guide/" target="_blank" rel="noopener" onclick="hideGsModal()">Open Guide</a>
     </div>
   </div>
-  <p class="byline">by <a href="https://github.com/axiomeye" target="_blank" rel="noopener">axiomeye</a></p>
+
+  <!-- Popup: shown immediately when Start is confirmed -->
+  <div id="ready-backdrop" class="popup-backdrop">
+    <div class="popup">
+      <div class="popup-icon">⛏️</div>
+      <h2>Server is Spinning Up!</h2>
+      <p>The infrastructure is ready, but the Minecraft server itself still needs <strong>4–5 minutes</strong> to fully start.<br><br>Grab a snack and try connecting in a bit.</p>
+      <button class="popup-btn" onclick="dismissPopup()">Got it!</button>
+    </div>
+  </div>
+
+  <!-- Popup: MC server is actually ready -->
+  <div id="mc-ready-backdrop" class="popup-backdrop">
+    <div class="popup">
+      <div class="popup-icon">✅</div>
+      <h2>Server is Ready!</h2>
+      <p>Connect now using:<br><strong id="ready-ip" style="font-family:'JetBrains Mono',monospace; color:#e2e8f0;"></strong></p>
+      <button class="popup-btn" onclick="dismissMcReadyPopup()">Let's go!</button>
+      {% if paypal_url %}
+      <p class="popup-donate">Enjoying the server? <a href="{{ paypal_url }}" target="_blank" rel="noopener">Buy me a coffee ☕</a></p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Popup: Confirm Start -->
+  <div id="confirm-backdrop" class="popup-backdrop">
+    <div class="popup">
+      <div class="popup-icon">🤔</div>
+      <h2>Are you sure?</h2>
+      <p>This will provision the infrastructure and start the boot sequence.<br><br><span style="color: #6b82aa; font-size: 0.75rem;">Note: The server will turn off automatically when no one is online.</span></p>
+      <div style="display: flex; gap: 0.8rem; justify-content: center;">
+        <button class="popup-btn" style="background: rgba(255,255,255,0.08); color: #94a3b8;" onclick="dismissConfirmPopup(event)">Cancel</button>
+        <form id="start-form" style="margin: 0;">
+          <button type="submit" class="popup-btn">Yes, start it!</button>
+        </form>
+      </div>
+    </div>
+  </div>
 
   <script>
+    // ── View switching ──────────────────────────────────────────────────
+    const landingView = document.getElementById('view-landing');
+    const panelView   = document.getElementById('view-panel');
+
+    function enterPanel() {
+      landingView.classList.add('hidden');
+      panelView.classList.remove('hidden');
+      // restart the entrance animation
+      panelView.style.animation = 'none';
+      void panelView.offsetWidth;
+      panelView.style.animation = '';
+    }
+    function exitPanel(e) {
+      if (e) e.preventDefault();
+      panelView.classList.add('hidden');
+      landingView.classList.remove('hidden');
+      landingView.style.animation = 'none';
+      void landingView.offsetWidth;
+      landingView.style.animation = '';
+    }
+
     // ── Get Started modal ───────────────────────────────────────────────
     const gsBackdrop = document.getElementById('gs-backdrop');
     function showGsModal(e) { if (e) e.preventDefault(); gsBackdrop.classList.add('visible'); }
