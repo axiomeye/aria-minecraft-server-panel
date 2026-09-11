@@ -39,7 +39,7 @@
     /* ══════════════════════════════════════════════
        LANDING
        ══════════════════════════════════════════════ */
-    .landing { text-align: center; max-width: 640px; }
+    .landing { text-align: center; max-width: 960px; }
 
     .landing-title {
       font-size: 4.6rem;
@@ -50,7 +50,7 @@
       -webkit-text-fill-color: transparent;
       background-clip: text;
       line-height: 1.05;
-      margin-right: -0.2em; /* offset the trailing letter-spacing */
+      margin-right: -0.2em;
     }
 
     .landing-tag {
@@ -63,121 +63,150 @@
       margin-right: -0.34em;
     }
 
-    .landing-desc {
-      font-size: 0.95rem;
-      line-height: 1.85;
-      color: #8fa3c4;
-      margin: 2rem auto 3rem;
-      max-width: 560px;
-    }
-    .landing-desc strong { color: #cbd8ee; font-weight: 600; }
-    .landing-desc .accent { color: #a78bfa; font-weight: 600; }
-
-    /* ── Hex buttons ── */
-    .hex-row {
-      display: flex;
-      gap: 2.4rem;
-      justify-content: center;
-      flex-wrap: wrap;
+    /* ── World cards grid ── */
+    .world-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+      margin: 2.5rem 0 1.5rem;
+      width: 100%;
     }
 
-    .hex-btn {
-      --hex: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+    .world-card {
       position: relative;
-      display: block;
-      width: 256px;
-      height: 232px;
-      padding: 2px;
-      border: none;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(99, 130, 190, 0.12);
+      border-radius: 16px;
+      padding: 1.6rem 1.3rem 1.4rem;
+      text-align: center;
       cursor: pointer;
       text-decoration: none;
-      clip-path: var(--hex);
-      background: linear-gradient(120deg, #2563eb, #a78bfa, #7eb3ff, #2563eb);
-      background-size: 300% 300%;
-      animation: border-flow 7s linear infinite;
-      filter: drop-shadow(0 14px 34px rgba(0, 0, 0, 0.55));
-      transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.3, 1), filter 0.22s;
-    }
-    .hex-btn.alt {
-      background: linear-gradient(120deg, #16a34a, #4ade80, #86efac, #16a34a);
-      background-size: 300% 300%;
-    }
-    @keyframes border-flow {
-      0%   { background-position:   0% 50%; }
-      50%  { background-position: 100% 50%; }
-      100% { background-position:   0% 50%; }
-    }
-
-    .hex-inner {
-      width: 100%;
-      height: 100%;
-      clip-path: var(--hex);
-      background:
-        radial-gradient(ellipse at 50% 118%, rgba(59, 130, 246, 0.22) 0%, transparent 62%),
-        #0b1424;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 0.55rem;
-      padding: 0 2.5rem;
-      text-align: center;
-      transition: background 0.25s;
+      gap: 0.6rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.02);
+      backdrop-filter: blur(12px);
+      transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.3, 1),
+                  border-color 0.25s, box-shadow 0.25s;
+      overflow: hidden;
     }
-    .hex-btn.alt .hex-inner {
-      background:
-        radial-gradient(ellipse at 50% 118%, rgba(74, 222, 128, 0.18) 0%, transparent 62%),
-        #0b1424;
+    .world-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      opacity: 0;
+      transition: opacity 0.35s;
+      pointer-events: none;
+      z-index: 0;
     }
+    .world-card > * { position: relative; z-index: 1; }
 
-    .hex-btn:hover, .hex-btn:focus-visible {
-      transform: translateY(-7px) scale(1.025);
+    /* Per-world accent colors */
+    .world-card[data-world="classic"]::before  { background: radial-gradient(ellipse at 50% 120%, rgba(59,130,246,0.18) 0%, transparent 65%); }
+    .world-card[data-world="cobblemon"]::before { background: radial-gradient(ellipse at 50% 120%, rgba(167,139,250,0.18) 0%, transparent 65%); }
+    .world-card[data-world="latest"]::before    { background: radial-gradient(ellipse at 50% 120%, rgba(74,222,128,0.18) 0%, transparent 65%); }
+
+    .world-card:hover, .world-card:focus-visible {
+      transform: translateY(-5px) scale(1.015);
       outline: none;
-      filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 16px rgba(126, 179, 255, 0.35));
+      border-color: rgba(126, 179, 255, 0.3);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.45), 0 0 24px rgba(126,179,255,0.08);
     }
-    .hex-btn.alt:hover, .hex-btn.alt:focus-visible {
-      filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 16px rgba(74, 222, 128, 0.32));
-    }
-    .hex-btn:hover .hex-inner, .hex-btn:focus-visible .hex-inner {
-      background:
-        radial-gradient(ellipse at 50% 112%, rgba(59, 130, 246, 0.42) 0%, transparent 68%),
-        #0d1a30;
-    }
-    .hex-btn.alt:hover .hex-inner, .hex-btn.alt:focus-visible .hex-inner {
-      background:
-        radial-gradient(ellipse at 50% 112%, rgba(74, 222, 128, 0.32) 0%, transparent 68%),
-        #0d1a30;
-    }
-    .hex-btn:active { transform: translateY(-2px) scale(1); }
+    .world-card:hover::before { opacity: 1; }
+    .world-card:active { transform: translateY(-1px) scale(1); }
 
-    .hex-icon { color: #7eb3ff; line-height: 0; }
-    .hex-btn.alt .hex-icon { color: #4ade80; }
-    .hex-label {
-      font-size: 1.05rem;
+    .world-card[data-world="cobblemon"]:hover { border-color: rgba(167,139,250,0.3); box-shadow: 0 16px 48px rgba(0,0,0,0.45), 0 0 24px rgba(167,139,250,0.08); }
+    .world-card[data-world="latest"]:hover { border-color: rgba(74,222,128,0.3); box-shadow: 0 16px 48px rgba(0,0,0,0.45), 0 0 24px rgba(74,222,128,0.08); }
+
+    .wc-name {
+      font-size: 1.15rem;
       font-weight: 700;
       color: #e8eefc;
-      letter-spacing: 0.05em;
-      font-family: 'Inter', sans-serif;
+      letter-spacing: 0.03em;
     }
-    .hex-sub {
+    .wc-version {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.6rem;
-      letter-spacing: 0.14em;
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: #5c729a;
-      line-height: 1.5;
+      color: #4a5c7e;
+      margin-top: -0.3rem;
     }
 
-    @media (max-width: 620px) {
+    /* Reuse badge styles from the panel for card status dots */
+    .wc-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.28rem 0.8rem;
+      border-radius: 16px;
+      font-weight: 700;
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      margin-top: 0.15rem;
+    }
+    .wc-status.running      { background: rgba(34,197,94,0.12);  color: #4ade80; }
+    .wc-status.running .dot { background: #4ade80; box-shadow: 0 0 6px #4ade80; animation: pulse-green 1.8s ease-in-out infinite; }
+    .wc-status.stopped      { background: rgba(239,68,68,0.1);   color: #f87171; }
+    .wc-status.stopped .dot { background: #f87171; }
+    .wc-status.staging        { background: rgba(250,204,21,0.1);  color: #fbbf24; }
+    .wc-status.staging .dot   { background: #fbbf24; animation: pulse-yellow 1.2s ease-in-out infinite; }
+    .wc-status.spinning-up      { background: rgba(251,146,60,0.13); color: #fb923c; }
+    .wc-status.spinning-up .dot { background: #fb923c; box-shadow: 0 0 8px rgba(251,146,60,0.6); animation: pulse-orange 1s ease-in-out infinite; }
+
+    .wc-players {
+      font-size: 0.73rem;
+      color: #6b82aa;
+      min-height: 1.1rem;
+    }
+    .wc-players.has-players { color: #8fa8c8; }
+    .wc-player-names {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      color: #4f6585;
+      min-height: 0.9rem;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .landing-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.2rem;
+      margin-top: 0.2rem;
+      font-size: 0.72rem;
+    }
+    .landing-links a {
+      color: #55688c;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .landing-links a:hover { color: #8fa8cc; }
+    .landing-links .guide-link {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      color: #4ade80; border: 1px solid rgba(74,222,128,0.25);
+      border-radius: 20px; padding: 0.15rem 0.6rem;
+      font-weight: 600; font-size: 0.68rem; letter-spacing: 0.03em;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+    }
+    .landing-links .guide-link:hover { color: #86efac; border-color: rgba(74,222,128,0.5); background: rgba(74,222,128,0.06); }
+
+    @media (max-width: 720px) {
       .landing-title { font-size: 3.2rem; }
-      .landing-desc { font-size: 0.88rem; margin: 1.5rem auto 2.25rem; }
-      .hex-row { gap: 1.6rem; }
-      .hex-btn { width: 216px; height: 196px; }
-      .hex-inner { padding: 0 2rem; }
+      .world-grid { grid-template-columns: 1fr; max-width: 340px; margin-left: auto; margin-right: auto; }
+    }
+    @media (min-width: 721px) and (max-width: 900px) {
+      .world-grid { gap: 1rem; }
+      .world-card { padding: 1.3rem 1rem 1.2rem; }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .hex-btn { animation: none; }
+      .world-card { transition: none; }
       .view { animation: none; }
     }
 
@@ -342,13 +371,7 @@
     button:disabled { opacity: 0.28; cursor: default; }
     .btn-start { background: linear-gradient(135deg, #2563eb, #3b82f6); color: #fff; }
 
-    /* The generic `button` rules above outrank the .hex-btn ones on
-       :hover/:active, so re-assert the hex styling at equal specificity. */
-    .hex-btn, .hex-btn:hover:not(:disabled), .hex-btn:active:not(:disabled) {
-      padding: 2px; border-radius: 0; opacity: 1;
-    }
-    .hex-btn:hover:not(:disabled) { transform: translateY(-7px) scale(1.025); }
-    .hex-btn:active:not(:disabled) { transform: translateY(-2px) scale(1); }
+
 
     /* ── Footer ── */
     .footer { font-size: 0.7rem; color: #7a8fac; }
@@ -467,33 +490,23 @@
       <h1 class="landing-title">AriA</h1>
       <p class="landing-tag">Survival · since 2021</p>
 
-      <p class="landing-desc">
-        <strong>AriA</strong> was born in 2021 during the pandemic, to breathe fresh air once again
-        hence the name. Since then we have built, had fun, survived together and raped the
-        Ender Dragon multiple times with explosive arrows. Come and join the fun!
-        <br><span class="accent">Also, we have dragons.</span>
-      </p>
-
-      <div class="hex-row">
-        <button class="hex-btn" onclick="enterPanel()">
-          <span class="hex-inner">
-            <span class="hex-icon">
-              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
-            </span>
-            <span class="hex-label">Start the Server</span>
-            <span class="hex-sub">Power it up &amp; grab the IP</span>
+      <div class="world-grid">
+        {% for key, w in worlds.items() %}
+        <a class="world-card" data-world="{{ key }}" href="?world={{ key }}">
+          <span class="wc-name">{{ w.label }}</span>
+          <span class="wc-version">v{{ w.version }}</span>
+          <span class="wc-status stopped" data-status>
+            <span class="dot"></span>
+            <span data-status-text>LOADING</span>
           </span>
-        </button>
-
-        <a class="hex-btn alt" href="https://axiomeye.github.io/aria-mc-server-guide/" target="_blank" rel="noopener">
-          <span class="hex-inner">
-            <span class="hex-icon">
-              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-            </span>
-            <span class="hex-label">How to Join</span>
-            <span class="hex-sub">First time here? Start here</span>
-          </span>
+          <span class="wc-players" data-players></span>
+          <span class="wc-player-names" data-player-names></span>
         </a>
+        {% endfor %}
+      </div>
+
+      <div class="landing-links">
+        <a class="guide-link" href="https://axiomeye.github.io/aria-mc-server-guide/" target="_blank" rel="noopener">📖 How to Join</a>
       </div>
     </div>
     <p class="byline">by <a href="https://github.com/axiomeye" target="_blank" rel="noopener">axiomeye</a></p>
@@ -602,8 +615,8 @@
   <div id="confirm-backdrop" class="popup-backdrop">
     <div class="popup">
       <div class="popup-icon">🤔</div>
-      <h2>Are you sure?</h2>
-      <p>This will provision the infrastructure and start the boot sequence.<br><br><span style="color: #6b82aa; font-size: 0.75rem;">Note: The server will turn off automatically when no one is online.</span></p>
+      <h2 id="confirm-title">Are you sure?</h2>
+      <p>This will start <strong id="confirm-world-name" style="color:#7eb3ff;"></strong> and provision the infrastructure.<br><br><span style="color: #6b82aa; font-size: 0.75rem;">Note: The server will turn off automatically when no one is online.</span></p>
       <div style="display: flex; gap: 0.8rem; justify-content: center;">
         <button class="popup-btn" style="background: rgba(255,255,255,0.08); color: #94a3b8;" onclick="dismissConfirmPopup(event)">Cancel</button>
         <form id="start-form" style="margin: 0;">
@@ -621,7 +634,6 @@
     function enterPanel() {
       landingView.classList.add('hidden');
       panelView.classList.remove('hidden');
-      // restart the entrance animation
       panelView.style.animation = 'none';
       void panelView.offsetWidth;
       panelView.style.animation = '';
@@ -640,6 +652,67 @@
     if (new URLSearchParams(window.location.search).has('world')) {
       enterPanel();
     }
+
+    // ── Landing dashboard: live world cards ─────────────────────────────
+    (function () {
+      const TRANSITIONAL = new Set(['staging', 'provisioning', 'repairing', 'stopping']);
+      const cards = document.querySelectorAll('.world-card[data-world]');
+      if (!cards.length) return;
+
+      function statusLabel(s) {
+        if (s === 'running')    return 'ONLINE';
+        if (s === 'spinning_up') return 'SPINNING UP';
+        if (TRANSITIONAL.has(s)) return s.toUpperCase();
+        return 'OFFLINE';
+      }
+      function statusClass(s) {
+        if (s === 'running')    return 'running';
+        if (s === 'spinning_up') return 'spinning-up';
+        if (TRANSITIONAL.has(s)) return 'staging';
+        return 'stopped';
+      }
+
+      function applyCard(card, d) {
+        const badge     = card.querySelector('[data-status]');
+        const text      = card.querySelector('[data-status-text]');
+        const playersEl = card.querySelector('[data-players]');
+        const namesEl   = card.querySelector('[data-player-names]');
+
+        badge.className = 'wc-status ' + statusClass(d.status);
+        text.textContent = statusLabel(d.status);
+
+        if (d.status === 'running' && d.players_online > 0) {
+          playersEl.textContent = d.players_online + '/' + d.players_max + ' online';
+          playersEl.classList.add('has-players');
+          namesEl.textContent = d.player_names.join(', ');
+        } else if (d.status === 'running') {
+          playersEl.textContent = '0/' + d.players_max + ' online';
+          playersEl.classList.remove('has-players');
+          namesEl.textContent = '';
+        } else {
+          playersEl.textContent = '';
+          playersEl.classList.remove('has-players');
+          namesEl.textContent = '';
+        }
+      }
+
+      function refreshAll() {
+        fetch('/api/status/all', { credentials: 'same-origin' })
+          .then(r => r.ok ? r.json() : null)
+          .then(data => {
+            if (!data) return;
+            cards.forEach(card => {
+              const w = card.getAttribute('data-world');
+              if (data[w]) applyCard(card, data[w]);
+            });
+          })
+          .catch(() => {});
+      }
+
+      // Initial fetch + 15s refresh
+      refreshAll();
+      setInterval(refreshAll, 15000);
+    })();
 
     // ── Get Started modal ───────────────────────────────────────────────
     const gsBackdrop = document.getElementById('gs-backdrop');
@@ -662,8 +735,15 @@
     }
     function dismissMcReadyPopup() { mcReadyBackdrop.classList.remove('visible'); }
 
+    const WORLDS = {{ worlds | tojson }};
+    const currentWorld = '{{ world }}';
+
     const confirmBackdrop = document.getElementById('confirm-backdrop');
-    function showConfirmPopup() { confirmBackdrop.classList.add('visible'); }
+    function showConfirmPopup() {
+      const worldLabel = WORLDS[currentWorld] ? WORLDS[currentWorld].label : currentWorld;
+      document.getElementById('confirm-world-name').textContent = worldLabel;
+      confirmBackdrop.classList.add('visible');
+    }
     function dismissConfirmPopup(e) { if(e) e.preventDefault(); confirmBackdrop.classList.remove('visible'); }
 
     // ── Status polling ─────────────────────────────────────────────────
@@ -757,7 +837,7 @@
       // in-flight state onto another shows the wrong thing. The reload is only
       // usable because ?world= opens straight into the panel (see enterPanel
       // call below), which is what previously bounced the user to the landing page.
-      const currentWorld = '{{ world }}';
+
       const worldSelect = document.getElementById('world-select');
       if (worldSelect) {
         worldSelect.addEventListener('change', function () {

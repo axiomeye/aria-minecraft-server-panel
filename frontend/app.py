@@ -62,12 +62,28 @@ def get_user():
 
 
 def check_minecraft_ready(ip):
+    """Query the Minecraft SLP endpoint and return player data.
+
+    Returns a dict with 'online', 'players_online', 'players_max', and
+    'player_names' when the server is reachable, or a falsy dict when it
+    is not.
+    """
     try:
         server = JavaServer.lookup(f"{ip}:25565", timeout=5)
-        server.status()
-        return True
+        resp = server.status()
+        names = []
+        if resp.players.sample:
+            names = [p.name for p in resp.players.sample]
+        return {
+            "online": True,
+            "players_online": resp.players.online,
+            "players_max": resp.players.max,
+            "player_names": names,
+        }
     except Exception:
-        return False
+        return {"online": False, "players_online": 0, "players_max": 0, "player_names": []}
+
+_EMPTY_PLAYERS = {"players_online": 0, "players_max": 0, "player_names": []}
 
 def server_status(instance):
     try:
@@ -77,15 +93,19 @@ def server_status(instance):
             None,
         )
         status = inst.status.lower()
-        
+        players = dict(_EMPTY_PLAYERS)
+
         # Keep it in spinning_up state if VM is running but Java isn't responding yet
         if status == 'running' and ip:
-            if not check_minecraft_ready(ip):
+            mc = check_minecraft_ready(ip)
+            if not mc["online"]:
                 status = 'spinning_up'
+            else:
+                players = {k: mc[k] for k in _EMPTY_PLAYERS}
 
-        return status, ip
+        return status, ip, players
     except Exception:
-        return "stopped", None
+        return "stopped", None, dict(_EMPTY_PLAYERS)
 
 
 def get_installation_token():
@@ -159,30 +179,34 @@ def get_workflow_status(world):
 @app.get("/")
 def index():
     world = pick_world(request.args.get("world", DEFAULT_WORLD))
-    status, ip = server_status(WORLDS[world]["instance"])
+    status, ip, players = server_status(WORLDS[world]["instance"])
     workflow = get_workflow_status(world) if status != 'running' else None
     return render_template(
         "index.html", status=status, ip=ip, user=get_user(),
         phrase=random.choice(PHRASES), workflow=workflow, paypal_url=PAYPAL_URL,
-        world=world, worlds=WORLDS,
+        world=world, worlds=WORLDS, players=players,
     )
 
 
 @app.get("/api/status")
 def api_status():
     world = pick_world(request.args.get("world", DEFAULT_WORLD))
-    status, ip = server_status(WORLDS[world]["instance"])
+    status, ip, players = server_status(WORLDS[world]["instance"])
     workflow = get_workflow_status(world) if status != 'running' else None
-    return jsonify({"world": world, "status": status, "ip": ip, "workflow": workflow})
+    return jsonify({"world": world, "status": status, "ip": ip, "workflow": workflow, **players})
 
 
 @app.get("/api/status/all")
 def api_status_all():
-    """Status of every world, so the selector can show which are live."""
+    """Status of every world, so the landing dashboard can show live data."""
     out = {}
     for name, cfg in WORLDS.items():
-        status, ip = server_status(cfg["instance"])
-        out[name] = {"status": status, "ip": ip, "label": cfg["label"], "version": cfg["version"]}
+        status, ip, players = server_status(cfg["instance"])
+        out[name] = {
+            "status": status, "ip": ip,
+            "label": cfg["label"], "version": cfg["version"],
+            **players,
+        }
     return jsonify(out)
 
 
