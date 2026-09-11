@@ -119,24 +119,38 @@ def trigger(event_type, world):
         resp.raise_for_status()
 
 
-def get_workflow_status():
+def get_workflow_status(world):
+    """Status of the most recent create/destroy run for this world.
+
+    The runs API cannot filter on client_payload, and reading a run's inputs
+    costs an extra request each. The workflows therefore put the world in
+    run-name, which comes back as the run's display title, and we match on
+    that marker here.
+
+    Runs predating that change carry no marker and are skipped, so an old run
+    never shows up under the wrong world.
+    """
+    marker = f"[{world}]"
     try:
         token = get_installation_token()
         resp = requests.get(
-            f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/actions/runs?event=repository_dispatch&per_page=1",
+            f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/actions/runs"
+            "?event=repository_dispatch&per_page=20",
             headers={"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"},
             timeout=10,
         )
         if not resp.ok:
             return None
-        runs = resp.json().get("workflow_runs", [])
-        if not runs:
-            return None
-        return {
-            "status": runs[0].get("status"),
-            "conclusion": runs[0].get("conclusion"),
-            "html_url": runs[0].get("html_url")
-        }
+        for run in resp.json().get("workflow_runs", []):
+            title = run.get("display_title") or run.get("name") or ""
+            if marker not in title:
+                continue
+            return {
+                "status": run.get("status"),
+                "conclusion": run.get("conclusion"),
+                "html_url": run.get("html_url"),
+            }
+        return None
     except Exception as e:
         logging.error("Failed to get workflow status: %s", getattr(e, "message", str(e)))
         return None
@@ -146,7 +160,7 @@ def get_workflow_status():
 def index():
     world = pick_world(request.args.get("world", DEFAULT_WORLD))
     status, ip = server_status(WORLDS[world]["instance"])
-    workflow = get_workflow_status() if status != 'running' else None
+    workflow = get_workflow_status(world) if status != 'running' else None
     return render_template(
         "index.html", status=status, ip=ip, user=get_user(),
         phrase=random.choice(PHRASES), workflow=workflow, paypal_url=PAYPAL_URL,
@@ -158,7 +172,7 @@ def index():
 def api_status():
     world = pick_world(request.args.get("world", DEFAULT_WORLD))
     status, ip = server_status(WORLDS[world]["instance"])
-    workflow = get_workflow_status() if status != 'running' else None
+    workflow = get_workflow_status(world) if status != 'running' else None
     return jsonify({"world": world, "status": status, "ip": ip, "workflow": workflow})
 
 
