@@ -312,6 +312,18 @@
       display: none;
     }
     .workflow-status.visible { display: block; }
+
+    .world-tabs { display: flex; gap: 6px; margin: 14px 0 8px; justify-content: center; flex-wrap: wrap; }
+    .world-tab {
+      flex: 1 1 0; min-width: 84px; padding: 8px 6px; border-radius: 10px;
+      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+      text-decoration: none; color: #8ba5d2; text-align: center; transition: all .15s ease;
+    }
+    .world-tab:hover { background: rgba(255,255,255,.07); color: #cbd5e1; }
+    .world-tab.active { background: rgba(139,165,210,.16); border-color: #8ba5d2; color: #e2e8f0; }
+    .world-name { display: block; font-weight: 600; font-size: .92rem; }
+    .world-ver { display: block; font-size: .7rem; opacity: .7; font-family: 'JetBrains Mono', monospace; }
+    .world-blurb { font-size: .8rem; color: #8ba5d2; margin: 0 0 6px; min-height: 2.2em; }
     .workflow-status a { color: #8ba5d2; text-decoration: none; text-transform: capitalize; }
     .workflow-status a:hover { text-decoration: underline; }
 
@@ -495,6 +507,17 @@
     <div class="card">
       <h1>AriA</h1>
       <p class="phrase">{{ phrase }}</p>
+
+      <div class="world-tabs">
+        {% for key, w in worlds.items() %}
+          <a class="world-tab {% if key == world %}active{% endif %}"
+             href="{{ url_for('index', world=key) }}">
+            <span class="world-name">{{ w.label }}</span>
+            <span class="world-ver">{{ w.version }}</span>
+          </a>
+        {% endfor %}
+      </div>
+      <p class="world-blurb">{{ worlds[world].blurb }}</p>
 
       {% if status == 'running' %}
         {% set cls = 'running' %}
@@ -714,7 +737,7 @@
       }
 
       function poll() {
-        fetch('/api/status', { credentials: 'same-origin' })
+        fetch('/api/status?world={{ world }}', { credentials: 'same-origin' })
           .then(r => { if (!r.ok) return null; return r.json(); })
           .then(data => {
             if (!data) return;
@@ -746,7 +769,7 @@
           applyStatus('stopped', '', { status: 'queued' });
           if (!timer) scheduleNext();
 
-          fetch('/action/start', { method: 'POST', credentials: 'same-origin' })
+          fetch('/action/{{ world }}/start', { method: 'POST', credentials: 'same-origin' })
             .catch(err => {
               console.error('Error triggering start action:', err);
             });

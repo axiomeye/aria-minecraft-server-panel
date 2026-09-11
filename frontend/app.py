@@ -18,6 +18,36 @@ PHRASES = [l.strip() for l in _phrases_file.read_text().splitlines() if l.strip(
 PROJECT = os.environ["GCP_PROJECT"]
 ZONE = os.environ["GCP_ZONE"]
 INSTANCE_NAME = os.environ["INSTANCE_NAME"]
+
+# Each world is an independent VM with its own disk and Terraform state; see
+# terraform/vm/locals.tf in aria-minecraft-server-iac. The instance name for
+# classic still comes from INSTANCE_NAME so existing deployments keep working.
+WORLDS = {
+    "classic": {
+        "label": "Classic",
+        "instance": INSTANCE_NAME,
+        "version": "1.20.1",
+        "blurb": "The original world. 75 mods, all the furniture, 2 years of builds.",
+    },
+    "cobblemon": {
+        "label": "Cobblemon",
+        "instance": os.environ.get("COBBLEMON_INSTANCE_NAME", "aria-minecraft-cobblemon-instance"),
+        "version": "1.21.1",
+        "blurb": "Pokemon on vanilla terrain. Catch, breed and battle trainers.",
+    },
+    "latest": {
+        "label": "Latest",
+        "instance": os.environ.get("LATEST_INSTANCE_NAME", "aria-minecraft-latest-instance"),
+        "version": "26.2",
+        "blurb": "Newest Minecraft, lean mod set. Fresh survival.",
+    },
+}
+DEFAULT_WORLD = "classic"
+
+
+def pick_world(name):
+    """Validate a world name from a query string or path segment."""
+    return name if name in WORLDS else DEFAULT_WORLD
 REPO_OWNER = os.environ.get("GITHUB_REPO_OWNER", "axiomeye")
 REPO_NAME = os.environ.get("GITHUB_REPO_NAME", "aria-minecraft-server-iac")
 GH_APP_ID = os.environ["GH_APP_ID"]
@@ -42,9 +72,9 @@ def check_minecraft_ready(ip):
     except Exception:
         return False
 
-def server_status():
+def server_status(instance):
     try:
-        inst = compute_v1.InstancesClient().get(project=PROJECT, zone=ZONE, instance=INSTANCE_NAME)
+        inst = compute_v1.InstancesClient().get(project=PROJECT, zone=ZONE, instance=instance)
         ip = next(
             (ac.nat_i_p for ni in inst.network_interfaces for ac in ni.access_configs if ac.nat_i_p),
             None,
@@ -79,12 +109,12 @@ def get_installation_token():
     return resp.json()["token"]
 
 
-def trigger(event_type):
+def trigger(event_type, world):
     token = get_installation_token()
     resp = requests.post(
         f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/dispatches",
         headers={"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"},
-        json={"event_type": event_type},
+        json={"event_type": event_type, "client_payload": {"world": world}},
         timeout=10,
     )
     if not resp.ok:
@@ -117,24 +147,41 @@ def get_workflow_status():
 
 @app.get("/")
 def index():
-    status, ip = server_status()
+    world = pick_world(request.args.get("world", DEFAULT_WORLD))
+    status, ip = server_status(WORLDS[world]["instance"])
     workflow = get_workflow_status() if status != 'running' else None
-    return render_template("index.html", status=status, ip=ip, user=get_user(), phrase=random.choice(PHRASES), workflow=workflow, paypal_url=PAYPAL_URL)
+    return render_template(
+        "index.html", status=status, ip=ip, user=get_user(),
+        phrase=random.choice(PHRASES), workflow=workflow, paypal_url=PAYPAL_URL,
+        world=world, worlds=WORLDS,
+    )
 
 
 @app.get("/api/status")
 def api_status():
-    status, ip = server_status()
+    world = pick_world(request.args.get("world", DEFAULT_WORLD))
+    status, ip = server_status(WORLDS[world]["instance"])
     workflow = get_workflow_status() if status != 'running' else None
-    return jsonify({"status": status, "ip": ip, "workflow": workflow})
+    return jsonify({"world": world, "status": status, "ip": ip, "workflow": workflow})
 
 
-@app.post("/action/<name>")
-def action(name):
+@app.get("/api/status/all")
+def api_status_all():
+    """Status of every world, so the selector can show which are live."""
+    out = {}
+    for name, cfg in WORLDS.items():
+        status, ip = server_status(cfg["instance"])
+        out[name] = {"status": status, "ip": ip, "label": cfg["label"], "version": cfg["version"]}
+    return jsonify(out)
+
+
+@app.post("/action/<world>/<name>")
+def action(world, name):
+    world = pick_world(world)
     events = {"start": "create-infr", "stop": "destroy-infr"}
     if name in events:
-        trigger(events[name])
-    return redirect(url_for("index"))
+        trigger(events[name], world)
+    return redirect(url_for("index", world=world))
 
 
 if __name__ == "__main__":
