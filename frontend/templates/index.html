@@ -313,17 +313,15 @@
     }
     .workflow-status.visible { display: block; }
 
-    .world-tabs { display: flex; gap: 6px; margin: 14px 0 8px; justify-content: center; flex-wrap: wrap; }
-    .world-tab {
-      flex: 1 1 0; min-width: 84px; padding: 8px 6px; border-radius: 10px;
-      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
-      text-decoration: none; color: #8ba5d2; text-align: center; transition: all .15s ease;
+    .world-picker { margin: 14px 0 10px; }
+    #world-select {
+      width: 100%; padding: 9px 12px; border-radius: 10px; cursor: pointer;
+      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12);
+      color: #e2e8f0; font-family: inherit; font-size: .92rem; font-weight: 600;
+      appearance: none; text-align: center; text-align-last: center;
     }
-    .world-tab:hover { background: rgba(255,255,255,.07); color: #cbd5e1; }
-    .world-tab.active { background: rgba(139,165,210,.16); border-color: #8ba5d2; color: #e2e8f0; }
-    .world-name { display: block; font-weight: 600; font-size: .92rem; }
-    .world-ver { display: block; font-size: .7rem; opacity: .7; font-family: 'JetBrains Mono', monospace; }
-    .world-blurb { font-size: .8rem; color: #8ba5d2; margin: 0 0 6px; min-height: 2.2em; }
+    #world-select:hover { background: rgba(255,255,255,.08); border-color: #8ba5d2; }
+    #world-select option { background: #1a2234; color: #e2e8f0; font-weight: 500; }
     .workflow-status a { color: #8ba5d2; text-decoration: none; text-transform: capitalize; }
     .workflow-status a:hover { text-decoration: underline; }
 
@@ -508,16 +506,13 @@
       <h1>AriA</h1>
       <p class="phrase">{{ phrase }}</p>
 
-      <div class="world-tabs">
-        {% for key, w in worlds.items() %}
-          <a class="world-tab {% if key == world %}active{% endif %}"
-             href="{{ url_for('index', world=key) }}">
-            <span class="world-name">{{ w.label }}</span>
-            <span class="world-ver">{{ w.version }}</span>
-          </a>
-        {% endfor %}
+      <div class="world-picker">
+        <select id="world-select" aria-label="World">
+          {% for key, w in worlds.items() %}
+            <option value="{{ key }}" {% if key == world %}selected{% endif %}>{{ w.label }} &middot; {{ w.version }}</option>
+          {% endfor %}
+        </select>
       </div>
-      <p class="world-blurb">{{ worlds[world].blurb }}</p>
 
       {% if status == 'running' %}
         {% set cls = 'running' %}
@@ -640,6 +635,12 @@
       landingView.style.animation = '';
     }
 
+    // A ?world= parameter means we arrived from the world dropdown, so go
+    // straight to the panel instead of making the user click through again.
+    if (new URLSearchParams(window.location.search).has('world')) {
+      enterPanel();
+    }
+
     // ── Get Started modal ───────────────────────────────────────────────
     const gsBackdrop = document.getElementById('gs-backdrop');
     function showGsModal(e) { if (e) e.preventDefault(); gsBackdrop.classList.add('visible'); }
@@ -737,7 +738,7 @@
       }
 
       function poll() {
-        fetch('/api/status?world={{ world }}', { credentials: 'same-origin' })
+        fetch('/api/status?world=' + currentWorld, { credentials: 'same-origin' })
           .then(r => { if (!r.ok) return null; return r.json(); })
           .then(data => {
             if (!data) return;
@@ -750,6 +751,19 @@
 
       function scheduleNext() { clearTimeout(timer); timer = setTimeout(poll, POLL_MS); }
       function stopPolling()  { clearTimeout(timer); timer = null; }
+
+      // Switching reloads rather than swapping client-side: status, IP, progress
+      // bar and popups are all rendered per world, and carrying one world's
+      // in-flight state onto another shows the wrong thing. The reload is only
+      // usable because ?world= opens straight into the panel (see enterPanel
+      // call below), which is what previously bounced the user to the landing page.
+      const currentWorld = '{{ world }}';
+      const worldSelect = document.getElementById('world-select');
+      if (worldSelect) {
+        worldSelect.addEventListener('change', function () {
+          window.location.search = '?world=' + encodeURIComponent(this.value);
+        });
+      }
 
       // Kick off polling if needed
       const initStatus   = '{{ status }}';
@@ -769,7 +783,7 @@
           applyStatus('stopped', '', { status: 'queued' });
           if (!timer) scheduleNext();
 
-          fetch('/action/{{ world }}/start', { method: 'POST', credentials: 'same-origin' })
+          fetch('/action/' + currentWorld + '/start', { method: 'POST', credentials: 'same-origin' })
             .catch(err => {
               console.error('Error triggering start action:', err);
             });

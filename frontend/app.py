@@ -24,22 +24,19 @@ INSTANCE_NAME = os.environ["INSTANCE_NAME"]
 # classic still comes from INSTANCE_NAME so existing deployments keep working.
 WORLDS = {
     "classic": {
-        "label": "Classic",
+        "label": "AriA Classic",
         "instance": INSTANCE_NAME,
         "version": "1.20.1",
-        "blurb": "The original world. 75 mods, all the furniture, 2 years of builds.",
     },
     "cobblemon": {
-        "label": "Cobblemon",
+        "label": "AriA Cobblemon",
         "instance": os.environ.get("COBBLEMON_INSTANCE_NAME", "aria-minecraft-cobblemon-instance"),
         "version": "1.21.1",
-        "blurb": "Pokemon on vanilla terrain. Catch, breed and battle trainers.",
     },
     "latest": {
-        "label": "Latest",
+        "label": "AriA Latest",
         "instance": os.environ.get("LATEST_INSTANCE_NAME", "aria-minecraft-latest-instance"),
         "version": "26.2",
-        "blurb": "Newest Minecraft, lean mod set. Fresh survival.",
     },
 }
 DEFAULT_WORLD = "classic"
