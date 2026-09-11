@@ -29,7 +29,7 @@ WORLDS = {
         "version": "1.20.1",
     },
     "cobblemon": {
-        "label": "AriA Cobblemon",
+        "label": "AriA Pokémon",
         "instance": os.environ.get("COBBLEMON_INSTANCE_NAME", "aria-minecraft-cobblemon-instance"),
         "version": "1.21.1",
     },

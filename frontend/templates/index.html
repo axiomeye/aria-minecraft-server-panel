@@ -196,6 +196,47 @@
     @media (prefers-reduced-motion: reduce) {
       .world-card { transition: none; }
       .view { animation: none; }
+      .welcome-toast { animation: none !important; }
+    }
+
+    /* ── Welcome toast ── */
+    .welcome-toast {
+      position: fixed;
+      top: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(-80px);
+      background: rgba(42, 32, 22, 0.95);
+      border: 2px solid rgba(240, 192, 64, 0.4);
+      border-radius: 4px;
+      padding: 0.75rem 1.6rem;
+      z-index: 200;
+      text-align: center;
+      box-shadow: 2px 2px 0 rgba(0,0,0,0.4), 4px 4px 0 rgba(0,0,0,0.2);
+      opacity: 0;
+      pointer-events: none;
+      animation: toast-in-out 3s ease forwards;
+    }
+    .welcome-toast .toast-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #9a8a72;
+      margin-bottom: 0.2rem;
+    }
+    .welcome-toast .toast-name {
+      font-family: 'VT323', monospace;
+      font-size: 1.5rem;
+      background: linear-gradient(135deg, #f0c040, #d4760a);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+    }
+    @keyframes toast-in-out {
+      0%   { opacity: 0; transform: translateX(-50%) translateY(-80px); }
+      12%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+      75%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-30px); }
     }
 
     /* ══════════════════════════════════════════════
@@ -507,6 +548,12 @@
     <p class="byline">by <a href="https://github.com/axiomeye" target="_blank" rel="noopener">axiomeye</a></p>
   </div>
 
+  <!-- ══════════════ WELCOME TOAST ══════════════ -->
+  <div id="welcome-toast" class="welcome-toast">
+    <div class="toast-label">Benvenuto in</div>
+    <div id="toast-world-name" class="toast-name"></div>
+  </div>
+
   <!-- ══════════════ PANEL VIEW ══════════════ -->
   <div id="view-panel" class="view hidden">
     <a href="#" class="back-link" onclick="exitPanel(event)">← back</a>
@@ -622,6 +669,9 @@
   </div>
 
   <script>
+    const WORLDS = {{ worlds | tojson }};
+    const currentWorld = '{{ world }}';
+
     // ── View switching ──────────────────────────────────────────────────
     const landingView = document.getElementById('view-landing');
     const panelView   = document.getElementById('view-panel');
@@ -632,6 +682,15 @@
       panelView.style.animation = 'none';
       void panelView.offsetWidth;
       panelView.style.animation = '';
+
+      // Show welcome toast
+      const toast = document.getElementById('welcome-toast');
+      const toastName = document.getElementById('toast-world-name');
+      const label = WORLDS[currentWorld] ? WORLDS[currentWorld].label : 'AriA';
+      toastName.textContent = label;
+      toast.style.animation = 'none';
+      void toast.offsetWidth;
+      toast.style.animation = '';
     }
     function exitPanel(e) {
       if (e) e.preventDefault();
@@ -730,8 +789,6 @@
     }
     function dismissMcReadyPopup() { mcReadyBackdrop.classList.remove('visible'); }
 
-    const WORLDS = {{ worlds | tojson }};
-    const currentWorld = '{{ world }}';
 
     const confirmBackdrop = document.getElementById('confirm-backdrop');
     function showConfirmPopup() {
