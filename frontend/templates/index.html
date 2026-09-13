@@ -161,28 +161,54 @@
       white-space: nowrap;
     }
 
-    .landing-links {
+    .landing-actions {
       display: flex;
-      align-items: center;
+      gap: 1rem;
       justify-content: center;
-      gap: 1.2rem;
-      margin-top: 0.2rem;
-      font-size: 0.72rem;
+      margin-top: 0.4rem;
+      flex-wrap: wrap;
     }
-    .landing-links a {
-      color: #55688c;
+    .landing-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.8rem;
+      border-radius: 4px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
       text-decoration: none;
-      transition: color 0.15s;
+      letter-spacing: 0.03em;
+      transition: transform 0.15s, box-shadow 0.15s, border-color 0.2s, background 0.2s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     }
-    .landing-links a:hover { color: #8fa8cc; }
-    .landing-links .guide-link {
-      display: inline-flex; align-items: center; gap: 0.3rem;
-      color: #f0c040; border: 1px solid rgba(240,192,64,0.3);
-      border-radius: 4px; padding: 0.15rem 0.6rem;
-      font-weight: 600; font-size: 0.68rem; letter-spacing: 0.03em;
-      transition: color 0.15s, border-color 0.15s, background 0.15s;
+    .landing-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 2px 2px 0 rgba(0,0,0,0.4), 4px 4px 0 rgba(0,0,0,0.2);
     }
-    .landing-links .guide-link:hover { color: #facc15; border-color: rgba(240,192,64,0.6); background: rgba(240,192,64,0.1); }
+    .landing-btn:active { transform: translateY(0); box-shadow: none; }
+    .landing-btn.btn-guide {
+      background: linear-gradient(135deg, #d4760a, #f0c040);
+      color: #1a1410;
+    }
+    .landing-btn.btn-drive {
+      background: rgba(42, 32, 22, 0.9);
+      border: 2px solid rgba(139, 109, 68, 0.4);
+      color: #e8dcc8;
+    }
+    .landing-btn.btn-drive:hover {
+      border-color: rgba(139, 109, 68, 0.8);
+      background: rgba(62, 47, 33, 0.9);
+    }
+    .landing-btn-icon { font-size: 1.15rem; line-height: 1; }
+    .landing-btn-sub {
+      display: block;
+      font-size: 0.6rem;
+      font-weight: 400;
+      opacity: 0.7;
+      letter-spacing: 0.06em;
+      margin-top: 0.1rem;
+    }
 
     @media (max-width: 720px) {
       .landing-title { font-size: 3.2rem; }
@@ -541,8 +567,15 @@
         {% endfor %}
       </div>
 
-      <div class="landing-links">
-        <a class="guide-link" href="https://axiomeye.github.io/aria-mc-server-guide/" target="_blank" rel="noopener">📖 How to Join</a>
+      <div class="landing-actions">
+        <a class="landing-btn btn-guide" href="https://axiomeye.github.io/aria-mc-server-guide/" target="_blank" rel="noopener">
+          <span class="landing-btn-icon">📖</span>
+          <span>How to Join<span class="landing-btn-sub">Setup guide</span></span>
+        </a>
+        <a class="landing-btn btn-drive" href="https://drive.google.com/drive/folders/1PGz6Pj-zHA_SCj3PurE3ThTkz9V7AP9N" target="_blank" rel="noopener">
+          <span class="landing-btn-icon">📂</span>
+          <span>Download Mods<span class="landing-btn-sub">Google Drive</span></span>
+        </a>
       </div>
     </div>
     <p class="byline">by <a href="https://github.com/axiomeye" target="_blank" rel="noopener">axiomeye</a></p>
