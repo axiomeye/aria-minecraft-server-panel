@@ -11,7 +11,7 @@
 
     body {
       font-family: 'Inter', system-ui, sans-serif;
-      background: #1a1410;
+      background: #241b13;
       color: #e8dcc8;
       min-height: 100vh;
       display: flex;
@@ -91,27 +91,33 @@
                   border-color 0.25s, box-shadow 0.25s;
     }
 
-    /* Per-world accent colors */
-    .world-card[data-world="classic"] { border-top: 4px solid #5da03c; }
-    .world-card[data-world="cobblemon"] { border-top: 4px solid #d4a017; }
-    .world-card[data-world="latest"] { border-top: 4px solid #c03030; }
+    /* Per-world identity: the whole card carries the world's colour, not just
+       a hairline on top, so the three read as different places at a glance. */
+    .world-card[data-world="classic"]   { --accent: 93, 160, 60;  }
+    .world-card[data-world="cobblemon"] { --accent: 230, 70, 60;  }
+    .world-card[data-world="latest"]    { --accent: 70, 150, 230; }
+    .world-card[data-world] {
+      background:
+        linear-gradient(180deg, rgba(var(--accent), 0.22) 0%, rgba(var(--accent), 0.06) 55%, rgba(30, 23, 16, 0.95) 100%);
+      border: 2px solid rgba(var(--accent), 0.45);
+      border-top: 5px solid rgb(var(--accent));
+    }
 
     .world-card:hover, .world-card:focus-visible {
       transform: translateY(-5px);
       outline: none;
-      border-color: rgba(139, 109, 68, 0.8);
-      box-shadow: 2px 2px 0 rgba(0,0,0,0.4), 4px 4px 0 rgba(0,0,0,0.2);
+      border-color: rgba(var(--accent), 0.9);
+      box-shadow: 0 0 0 1px rgba(var(--accent), 0.35), 0 10px 28px rgba(var(--accent), 0.25);
     }
     .world-card:active { transform: translateY(-1px); }
 
-    .world-card[data-world="classic"]:hover { border-top-color: #7bc74d; }
-    .world-card[data-world="cobblemon"]:hover { border-top-color: #f0c040; }
-    .world-card[data-world="latest"]:hover { border-top-color: #e05050; }
+    .wc-icon { font-size: 1.9rem; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
 
     .wc-name {
       font-size: 1.15rem;
       font-weight: 700;
-      color: #e8dcc8;
+      color: rgb(var(--accent, 232, 220, 200));
+      filter: brightness(1.35);
       letter-spacing: 0.03em;
     }
     .wc-version {
@@ -555,6 +561,7 @@
       <div class="world-grid">
         {% for key, w in worlds.items() %}
         <a class="world-card" data-world="{{ key }}" href="?world={{ key }}">
+          <span class="wc-icon" aria-hidden="true">{{ {'classic': '⛏️', 'cobblemon': '⚡', 'latest': '✨'}.get(key, '🌍') }}</span>
           <span class="wc-name">{{ w.label }}</span>
           <span class="wc-version">v{{ w.version }}</span>
           <span class="wc-status stopped" data-status>
